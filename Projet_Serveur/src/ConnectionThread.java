@@ -8,6 +8,7 @@ import java.util.UUID;
 public class ConnectionThread implements Runnable {
     ServerSocket server;
     String clientToken;
+    String clientAdress;
 
     public ConnectionThread(ServerSocket server) {
         this.server = server;
@@ -18,7 +19,7 @@ public class ConnectionThread implements Runnable {
             String data = null;
             Socket client = server.accept();
             new Thread(new ConnectionThread(server)).start();
-            String clientAdress = "";
+            clientAdress = "";
             BufferedReader in = new BufferedReader(new InputStreamReader(client.getInputStream()));
             while ((data = in.readLine()) != null) {
                 //traitement des types  de messages
@@ -35,35 +36,61 @@ public class ConnectionThread implements Runnable {
                         System.out.println(clientToken);
 
                     }
-                    //Ls
-                    if(dataArray[0].equalsIgnoreCase("LS")){
-                        if(dataArray[1].equalsIgnoreCase(clientToken)){
-                            System.out.println("liste des fichiers!");
-                        }
-                        else{
-                            System.out.println("LS UNAUTHORIZED");
-                        }
+                    else{
+                        //Ls
+                        if(dataArray[0].equalsIgnoreCase("LS")){
+                            PrintWriter out = new PrintWriter(client.getOutputStream(),true);
 
-                    }
-                    //Write
-                    if(data.equalsIgnoreCase("WRITE")){
-                        if(dataArray[1].equalsIgnoreCase(clientToken)){
-                            System.out.println("Write!");
-                        }
-                        else{
-                            System.out.println("WRITE UNAUTHORIZED");
-                        }
-                    }
-                    //File
-                    if(data.equalsIgnoreCase("FILE")){
-                        System.out.println("Write File!");
-                    }
-                    //Read
-                    if(data.equalsIgnoreCase("READ")){
-                        System.out.println("read!");
-                    }
+                            if(dataArray[1].equalsIgnoreCase(clientToken)){
+                                out.println("Liste des fichiers");
+                                out.flush();
+                            }
+                            else{
+                                out.println("LS UNAUTHORIZED");
+                                out.flush();
+                            }
 
+                        }else{
+                            //Write
+                            if(data.equalsIgnoreCase("WRITE")){
+                                PrintWriter out = new PrintWriter(client.getOutputStream(),true);
+                                if(dataArray[1].equalsIgnoreCase(clientToken)){
+                                    out.println("WRITE!");
+                                    out.flush();
+                                }
+                                else{
+                                    out.println("WRITE UNAUTHORIZED");
+                                    out.flush();
+                                }
+                            }
+                            else{
+                                //File
+                                if(data.equalsIgnoreCase("FILE")){
+                                    System.out.println("Write File!");
+                                }
+                                else{
+                                    //Read
+                                    if(data.equalsIgnoreCase("READ")){
+                                        PrintWriter out = new PrintWriter(client.getOutputStream(),true);
+                                        if(dataArray[1].equalsIgnoreCase(clientToken)){
+                                            out.println("READ!");
+                                            out.flush();
+                                        }
+                                        else{
+                                            out.println("READ UNAUTHORIZED");
+                                            out.flush();
+                                        }
 
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+                else{
+                    PrintWriter out = new PrintWriter(client.getOutputStream(),true);
+                    out.println("NO CONNECTION TOKEN PROVIDED");
+                    out.flush();
                 }
 
 

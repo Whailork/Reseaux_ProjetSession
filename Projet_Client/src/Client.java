@@ -10,15 +10,18 @@ public class Client {
     private Socket socket;
     private Scanner scanner;
     private String Token;
+    private String Response;
     private Client(InetAddress serverAddress, int serverPort) throws Exception{
         this.socket = new Socket(serverAddress, serverPort);
         this.scanner = new Scanner(System.in);
     }
 
+    //to register Register 192.168.0.15
     private void start() throws IOException {
         String input;
         BufferedReader bfr = new BufferedReader(new InputStreamReader(this.socket.getInputStream()));
         while(true){
+
             input = scanner.nextLine();
             if(Token != null){
                 input += " " +Token;
@@ -26,8 +29,16 @@ public class Client {
             PrintWriter out = new PrintWriter(this.socket.getOutputStream(),true);
             out.println(input);
             out.flush();
-            Token = bfr.readLine();
-            System.out.println(Token);
+
+            Response = bfr.readLine();
+            if(Token == null){
+                String[] splitResponse = Response.split(" ");
+                Token = splitResponse[1];
+            }
+            else{
+
+            }
+            System.out.println(Response);
 
         }
     }

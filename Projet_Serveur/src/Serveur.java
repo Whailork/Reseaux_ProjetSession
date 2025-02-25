@@ -52,7 +52,7 @@ public class Serveur {
         }
 
 
-        System.out.println("\r\nRunning Server: " +  "Host=" + app.getSocketAddress().getHostAddress() + " Port=" + app.getPort());
+        System.out.println("\r\nRunning Server: " + app.getSocketAddress().getHostAddress() + " " + app.getPort());
 
         app.listen();
 
