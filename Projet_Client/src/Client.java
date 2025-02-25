@@ -26,6 +26,9 @@ public class Client {
             if(Token != null){
                 input += " " +Token;
             }
+            else{
+                input+= " " + socket.getInetAddress().toString();
+            }
             PrintWriter out = new PrintWriter(this.socket.getOutputStream(),true);
             out.println(input);
             out.flush();

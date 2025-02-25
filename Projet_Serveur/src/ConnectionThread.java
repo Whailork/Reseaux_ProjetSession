@@ -9,7 +9,7 @@ public class ConnectionThread implements Runnable {
     ServerSocket server;
     String clientToken;
     String clientAdress;
-
+    Socket client;
     public ConnectionThread(ServerSocket server) {
         this.server = server;
     }
@@ -17,7 +17,7 @@ public class ConnectionThread implements Runnable {
     public void run() {
         try {
             String data = null;
-            Socket client = server.accept();
+            client = server.accept();
             new Thread(new ConnectionThread(server)).start();
             clientAdress = "";
             BufferedReader in = new BufferedReader(new InputStreamReader(client.getInputStream()));
@@ -41,7 +41,7 @@ public class ConnectionThread implements Runnable {
                         if(dataArray[0].equalsIgnoreCase("LS")){
                             PrintWriter out = new PrintWriter(client.getOutputStream(),true);
 
-                            if(dataArray[1].equalsIgnoreCase(clientToken)){
+                            if(dataArray[1].equalsIgnoreCase(clientToken) && clientAdress.equalsIgnoreCase(client.getInetAddress().toString())){
                                 out.println("Liste des fichiers");
                                 out.flush();
                             }
@@ -54,7 +54,7 @@ public class ConnectionThread implements Runnable {
                             //Write
                             if(data.equalsIgnoreCase("WRITE")){
                                 PrintWriter out = new PrintWriter(client.getOutputStream(),true);
-                                if(dataArray[1].equalsIgnoreCase(clientToken)){
+                                if(dataArray[1].equalsIgnoreCase(clientToken) && clientAdress.equalsIgnoreCase(client.getInetAddress().toString())){
                                     out.println("WRITE!");
                                     out.flush();
                                 }
@@ -72,7 +72,7 @@ public class ConnectionThread implements Runnable {
                                     //Read
                                     if(data.equalsIgnoreCase("READ")){
                                         PrintWriter out = new PrintWriter(client.getOutputStream(),true);
-                                        if(dataArray[1].equalsIgnoreCase(clientToken)){
+                                        if(dataArray[1].equalsIgnoreCase(clientToken) && clientAdress.equalsIgnoreCase(client.getInetAddress().toString())){
                                             out.println("READ!");
                                             out.flush();
                                         }
