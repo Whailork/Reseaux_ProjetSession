@@ -3,6 +3,7 @@ import java.io.InputStreamReader;
 import java.io.PrintWriter;
 import java.net.ServerSocket;
 import java.net.Socket;
+import java.util.IllegalFormatCodePointException;
 import java.util.UUID;
 
 public class ConnectionThread implements Runnable {
@@ -20,6 +21,15 @@ public class ConnectionThread implements Runnable {
             client = server.accept();
             new Thread(new ConnectionThread(server)).start();
             clientAdress = "";
+            boolean writeAuthorized = false;
+
+            // Parametre decodage
+            String nomFicher;
+            int offset;
+            int isLast;
+            String contenuFichier;
+
+
             BufferedReader in = new BufferedReader(new InputStreamReader(client.getInputStream()));
             while ((data = in.readLine()) != null) {
                 //traitement des types  de messages
@@ -52,37 +62,54 @@ public class ConnectionThread implements Runnable {
 
                         }else{
                             //Write
-                            if(data.equalsIgnoreCase("WRITE")){
+                            if(dataArray[0].equalsIgnoreCase("WRITE")){
                                 PrintWriter out = new PrintWriter(client.getOutputStream(),true);
-                                if(dataArray[1].equalsIgnoreCase(clientToken) && clientAdress.equalsIgnoreCase(client.getInetAddress().toString())){
-                                    out.println("WRITE!");
+                                if(dataArray[1].equalsIgnoreCase(clientToken) /* && verifier si le file existe dans la liste du server*/){
+                                    writeAuthorized = true;
+                                    out.println("WRITE AUTHORIZED");
                                     out.flush();
                                 }
                                 else{
-                                    out.println("WRITE UNAUTHORIZED");
+                                    writeAuthorized = false;
+                                    out.println("WRITE UNAUTHORIZED OR FILE ALREADY EXISTS");
                                     out.flush();
                                 }
                             }
-                            else{
-                                //File
-                                if(data.equalsIgnoreCase("FILE")){
-                                    System.out.println("Write File!");
-                                }
-                                else{
-                                    //Read
-                                    if(data.equalsIgnoreCase("READ")){
-                                        PrintWriter out = new PrintWriter(client.getOutputStream(),true);
-                                        if(dataArray[1].equalsIgnoreCase(clientToken) && clientAdress.equalsIgnoreCase(client.getInetAddress().toString())){
-                                            out.println("READ!");
-                                            out.flush();
-                                        }
-                                        else{
-                                            out.println("READ UNAUTHORIZED");
-                                            out.flush();
-                                        }
+                            else if(dataArray[0].equalsIgnoreCase("FILE")){
+                                PrintWriter out = new PrintWriter(client.getOutputStream(),true);
 
-                                    }
+                                if(writeAuthorized) {
+                                    // Décoder le message
+                                    nomFicher = dataArray[1];
+                                    offset = Integer.parseInt(dataArray[2]);
+                                    isLast = Integer.parseInt(dataArray[3]);
+                                    contenuFichier = dataArray[4];
+
+
+                                    out.println("FILE AUTHORIZED");
+                                    out.flush();
                                 }
+                                else  {
+                                    out.println("FILE UNAUTHORIZED");
+                                    out.flush();
+                                }
+                            }
+
+                            else{
+                                //Read
+                                if(dataArray[0].equalsIgnoreCase("READ")){
+                                    PrintWriter out = new PrintWriter(client.getOutputStream(),true);
+                                    if(dataArray[1].equalsIgnoreCase(clientToken) && clientAdress.equalsIgnoreCase(client.getInetAddress().toString())){
+                                        out.println("READ!");
+                                        out.flush();
+                                    }
+                                    else{
+                                        out.println("READ UNAUTHORIZED");
+                                        out.flush();
+                                    }
+
+                                }
+
                             }
                         }
                     }
