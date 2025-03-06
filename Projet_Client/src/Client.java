@@ -18,19 +18,54 @@ public class Client {
 
     //to register Register 192.168.0.15
     private void start() throws IOException {
+        String inputToSend;
         String input;
+        int fragmentSize = 500;
+
+        StringBuilder contenuMessage = new StringBuilder();
         BufferedReader bfr = new BufferedReader(new InputStreamReader(this.socket.getInputStream()));
         while(true){
 
             input = scanner.nextLine();
             if(Token != null){
-                input += " " +Token;
+
+                String nom_fichier;
+                String[] tableauInput;
+                tableauInput = input.split(" ");
+                inputToSend = tableauInput[0] + " " + Token + " " + tableauInput[1];
+                if(tableauInput[0] == "FILE") {
+                    if (tableauInput.length > 4) {
+                        for (int i = 4; i < tableauInput.length; i++) {
+                            contenuMessage.append(tableauInput[i]);
+                        }
+                    } else {
+                        if (contenuMessage.length() > fragmentSize) { // Si contenuMessage est plus grand que 500
+                            int nmbFragment = contenuMessage.length() / fragmentSize;
+                            for (int i = 0; i < nmbFragment; i++) {
+                                    /*
+                                    // Calculer l'offset et déterminer si c'est le dernier fragment
+                                    int offset = i;
+                                    boolean isLast = (i == numberOfFragments - 1);
+
+                                    // Découper le fichier en morceaux de 500 caractères
+                                    int start = i * fragmentSize;
+                                    int end = Math.min(start + fragmentSize, content.length());
+                                    String fragment = content.substring(start, end);
+
+                                    // Afficher le message de type FILE (simuler l'envoi)
+                                    System.out.println("FILE|" + fileName + "|" + offset + "|" + (isLast ? 1 : 0) + "|" + fragment);
+                                    */
+                            }
+                        }
+                    }
+                }
             }
-            else{
-                input+= " " + socket.getInetAddress().toString();
+            else{ // Register
+                inputToSend = input;
+                inputToSend += " " + socket.getInetAddress().toString();
             }
             PrintWriter out = new PrintWriter(this.socket.getOutputStream(),true);
-            out.println(input);
+            out.println(inputToSend);
             out.flush();
 
             Response = bfr.readLine();
