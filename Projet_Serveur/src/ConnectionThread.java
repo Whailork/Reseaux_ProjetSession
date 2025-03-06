@@ -55,7 +55,7 @@ public class ConnectionThread implements Runnable {
                             if(data.equalsIgnoreCase("WRITE")){
                                 PrintWriter out = new PrintWriter(client.getOutputStream(),true);
                                 if(dataArray[1].equalsIgnoreCase(clientToken) && clientAdress.equalsIgnoreCase(client.getInetAddress().toString())){
-                                    out.println("WRITE!");
+                                    out.println("WRITE AUTHORIZED");
                                     out.flush();
                                 }
                                 else{
