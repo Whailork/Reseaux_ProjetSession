@@ -14,7 +14,7 @@ public class Serveur {
     public ArrayList<String> strFiles;
     public ArrayList<String> strPeers;
 
-    public ArrayList<Socket> connectedServers;
+    public ArrayList<ServerLink> connectedServers;
     public Serveur(String ipAdresse) throws Exception{
         if(ipAdresse != null && !ipAdresse.isEmpty()){
 
@@ -35,8 +35,8 @@ public class Serveur {
     }
 
     private void listen(Serveur app) throws Exception{
-        new Thread(new ServerConnectionThread(app,server)).start();
-        //new Thread(new ConnectionThread(server)).start();
+        //new Thread(new ServerConnectionThread(app,server)).start();
+        new Thread(new ConnectionThread(app,server)).start();
     }
 
     public InetAddress getSocketAddress(){
@@ -90,7 +90,6 @@ public class Serveur {
                 bfr.close();
                 bfr2.close();
 
-                app.LoadConnectedServers();
             }
 
         }
@@ -100,7 +99,7 @@ public class Serveur {
 
         app.listen(app);
 
-        System.out.println(app.findAvailableFiles(app.getSocketAddress(),app.getPort()));
+        //System.out.println(app.findAvailableFiles(app.server.getInetAddress(),app.server.getLocalPort());
 
     }
 
@@ -109,11 +108,18 @@ public class Serveur {
         for (String peerAddress: strPeers) {
             String[] addressInfo = peerAddress.split(" ");
             if(addressInfo.length > 1){
-                if(InetAddress.getByName(addressInfo[0]).isReachable(1000)){
+                if(InetAddress.getByName(addressInfo[0]).isReachable(100)){
                     InetAddress address = InetAddress.getByName(addressInfo[0]);
                     try{
-                        Socket socket = new Socket(address, Integer.parseInt(addressInfo[1]));
-                        connectedServers.add(socket);
+                        if(findConnectedServer(address,Integer.parseInt(addressInfo[1])) == null){
+                            Socket socket = new Socket(address, Integer.parseInt(addressInfo[1]));
+                            ServerLink serverLink = new ServerLink(socket);
+                            connectedServers.add(serverLink);
+                        }
+                        else{
+                            System.out.println("server already connected");
+                        }
+
                     }
                     catch(Exception e){
                         System.out.println("cannot connect to server : " + peerAddress);
@@ -128,30 +134,36 @@ public class Serveur {
 
     }
 
-    public ArrayList<String> findAvailableFiles(InetAddress instigatorAddress, int instigatorPort){
-        ArrayList<String> availableFiles = new ArrayList<>();
+    public ServerLink findConnectedServer(InetAddress address, int port){
+        for (ServerLink serverLink:connectedServers) {
+            if(serverLink.linkSocket.getInetAddress() == address && serverLink.linkSocket.getPort() == port){
+                return serverLink;
+            }
+        }
+        return null;
+    }
+
+    public String findAvailableFiles(InetAddress instigatorAddress, int instigatorPort){
+        try{
+            LoadConnectedServers();
+        }
+        catch(Exception e){
+            System.out.println("error while connecting to peer servers");
+        }
+
+        String availableFiles = "";
         //load local files
         for (String file:app.strFiles) {
             if(!(file.split(" ").length > 1)){
-                availableFiles.add(file);
+                availableFiles = availableFiles.concat(file + " ");
             }
         }
         //search for files on connected servers
-        for (Socket socket:app.connectedServers) {
+        for (ServerLink serverLink:app.connectedServers) {
             try{
-                if(instigatorAddress != socket.getInetAddress() && instigatorPort != socket.getPort()){
-                    BufferedReader bfr = new BufferedReader(new InputStreamReader(socket.getInputStream()));
-
-                    PrintWriter out = new PrintWriter(socket.getOutputStream(),true);
-                    out.println("LS " + server.getInetAddress().toString() + ":" + server.getLocalPort());
-                    out.flush();
-
-                    String Response = bfr.readLine();
-                    for (String fileName: Response.split(" ")) {
-                        if(!availableFiles.contains(fileName)){
-                            availableFiles.add(fileName);
-                        }
-                    }
+                if(instigatorAddress != serverLink.linkSocket.getInetAddress() && instigatorPort != serverLink.linkSocket.getPort()){
+                   String response = serverLink.SendLSRequest(instigatorAddress,instigatorPort);
+                    availableFiles = availableFiles.concat(response);
                 }
 
             }

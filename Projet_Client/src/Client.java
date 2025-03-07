@@ -32,8 +32,14 @@ public class Client {
                 String nom_fichier;
                 String[] tableauInput;
                 tableauInput = input.split(" ");
-                inputToSend = tableauInput[0] + " " + Token + " " + tableauInput[1];
-                if(tableauInput[0] == "FILE") {
+                if(tableauInput.length > 1){
+                    inputToSend = tableauInput[0] + " " + Token + " " + tableauInput[1];
+                }
+                else{
+                    inputToSend = tableauInput[0] + " " + Token;
+                }
+
+                if(tableauInput[0].equalsIgnoreCase("file")) {
                     if (tableauInput.length > 4) {
                         for (int i = 4; i < tableauInput.length; i++) {
                             contenuMessage.append(tableauInput[i]);
@@ -57,6 +63,11 @@ public class Client {
                                     */
                             }
                         }
+                    }
+                }
+                else{
+                    if(tableauInput[0].equalsIgnoreCase("ls")){
+                        inputToSend = inputToSend.concat(" " + socket.getInetAddress().toString() + ":" + socket.getPort());
                     }
                 }
             }
