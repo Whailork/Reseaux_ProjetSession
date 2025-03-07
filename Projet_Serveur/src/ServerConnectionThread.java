@@ -20,7 +20,7 @@ public class ServerConnectionThread implements Runnable{
     }
     public void run() {
         try{
-            String data = null;
+            /*String data = null;
             clientServer = thisServer.accept();
             new Thread(new ServerConnectionThread(serverObject,thisServer)).start();
             BufferedReader in = new BufferedReader(new InputStreamReader(clientServer.getInputStream()));
@@ -28,7 +28,7 @@ public class ServerConnectionThread implements Runnable{
                 String[] dataArray = data.split(" ");
 
                 if(dataArray[0].equalsIgnoreCase("LS")){
-                    System.out.println("LS requested");
+                    System.out.println("LS requested from other server");
                     // get list of all available files
                     String[] instigatorInfo = dataArray[1].split(":");
                     ArrayList<String> response = new ArrayList<>();
@@ -45,7 +45,7 @@ public class ServerConnectionThread implements Runnable{
                 }
 
                 System.out.println("\r\nMessage from " + clientServer.getInetAddress().toString() + ": " + data);
-            }
+            }*/
         }
         catch(Exception e){
             System.out.println(e);

@@ -1,17 +1,21 @@
 import java.io.BufferedReader;
 import java.io.InputStreamReader;
 import java.io.PrintWriter;
+import java.net.InetAddress;
 import java.net.ServerSocket;
 import java.net.Socket;
+import java.util.ArrayList;
 import java.util.IllegalFormatCodePointException;
 import java.util.UUID;
 
 public class ConnectionThread implements Runnable {
     ServerSocket server;
+    Serveur serveurObject;
     String clientToken;
     String clientAdress;
     Socket client;
-    public ConnectionThread(ServerSocket server) {
+    public ConnectionThread(Serveur serveurObject,ServerSocket server) {
+        this.serveurObject = serveurObject;
         this.server = server;
     }
 
@@ -19,7 +23,7 @@ public class ConnectionThread implements Runnable {
         try {
             String data = null;
             client = server.accept();
-            new Thread(new ConnectionThread(server)).start();
+            new Thread(new ConnectionThread(serveurObject,server)).start();
             clientAdress = "";
             boolean writeAuthorized = false;
 
@@ -52,8 +56,13 @@ public class ConnectionThread implements Runnable {
                             PrintWriter out = new PrintWriter(client.getOutputStream(),true);
 
                             if(dataArray[1].equalsIgnoreCase(clientToken) && clientAdress.equalsIgnoreCase(client.getInetAddress().toString())){
-                                out.println("Liste des fichiers");
+                                String[] instigatorInfo = dataArray[2].split(":");
+                                String response = "";
+                                response =  serveurObject.findAvailableFiles(InetAddress.getByName(instigatorInfo[0].substring(1)),Integer.parseInt(instigatorInfo[1]));
+                                System.out.println(response);
+                                out.println(response);
                                 out.flush();
+
                             }
                             else{
                                 out.println("LS UNAUTHORIZED");
