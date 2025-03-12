@@ -48,19 +48,23 @@ public class Client {
                         if (contenuMessage.length() > fragmentSize) { // Si contenuMessage est plus grand que 500
                             int nmbFragment = contenuMessage.length() / fragmentSize;
                             for (int i = 0; i < nmbFragment; i++) {
-                                    /*
+
                                     // Calculer l'offset et déterminer si c'est le dernier fragment
-                                    int offset = i;
-                                    boolean isLast = (i == numberOfFragments - 1);
+                                    int offset = (i * fragmentSize);
+                                    boolean isLast = false;
+
+                                    if (i == nmbFragment - 1) {
+                                        isLast = true;
+                                    }
 
                                     // Découper le fichier en morceaux de 500 caractères
                                     int start = i * fragmentSize;
-                                    int end = Math.min(start + fragmentSize, content.length());
-                                    String fragment = content.substring(start, end);
+                                    int end = Math.min(start + fragmentSize, contenuMessage.length());
+                                    String fragment = contenuMessage.substring(start, end);
 
                                     // Afficher le message de type FILE (simuler l'envoi)
-                                    System.out.println("FILE|" + fileName + "|" + offset + "|" + (isLast ? 1 : 0) + "|" + fragment);
-                                    */
+                                    System.out.println("FILE|" + tableauInput[2] + "|" + offset + "|" + (isLast ? 1 : 0) + "|" + fragment);
+
                             }
                         }
                     }
