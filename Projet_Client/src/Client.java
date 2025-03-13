@@ -27,11 +27,10 @@ public class Client {
         while(true){
 
             input = scanner.nextLine();
+            String[] tableauInput = input.split(" ");
             if(Token != null){
 
                 String nom_fichier;
-                String[] tableauInput;
-                tableauInput = input.split(" ");
                 if(tableauInput.length > 1){
                     inputToSend = tableauInput[0] + " " + Token + " " + tableauInput[1];
                 }
@@ -91,8 +90,13 @@ public class Client {
             System.out.println(Response);
             String[] splitResponse = Response.split(" ");
             if(splitResponse[0].equalsIgnoreCase("READ-REDIRECT")){
-                String RedirectToken;
-                System.out.println("Sending READ request to " + splitResponse[1]+":"+splitResponse[2] + " with token : " + splitResponse[3]);
+                String RedirectToken = splitResponse[2];
+                System.out.println("Sending READ request to " + splitResponse[1] + " with token : " + splitResponse[2]);
+                String strRedirect = "READ " + RedirectToken + " " + tableauInput[1] + " " + splitResponse[1];
+                out.println(strRedirect);
+                out.flush();
+                Response = bfr.readLine();
+                System.out.println(Response);
             }
 
         }

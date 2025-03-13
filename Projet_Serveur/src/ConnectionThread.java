@@ -109,6 +109,7 @@ public class ConnectionThread implements Runnable {
                                 if(dataArray[0].equalsIgnoreCase("READ")){
                                     PrintWriter out = new PrintWriter(client.getOutputStream(),true);
                                     if(dataArray[1].equalsIgnoreCase(clientToken) && clientAdress.equalsIgnoreCase(client.getInetAddress().toString())){
+
                                         String fileName = dataArray[2];
                                         String[] instigatorInfo = dataArray[3].split(":");
                                         String response = "";
@@ -118,9 +119,29 @@ public class ConnectionThread implements Runnable {
                                         out.flush();
                                     }
                                     else{
-                                        out.println("READ UNAUTHORIZED");
-                                        out.flush();
+                                        if(dataArray.length > 3){
+                                            String fileName = dataArray[2];
+                                            String[] instigatorInfo = dataArray[3].split(":");
+                                            String response = "";
+                                            if(serveurObject.redirectConnections.containsKey(fileName+"/"+dataArray[1])){
+                                                response = serveurObject.redirectConnections.get(fileName+"/"+dataArray[1]).SendReadRequest(fileName,InetAddress.getByName(instigatorInfo[0].substring(1)),Integer.parseInt(instigatorInfo[1]));
+                                                System.out.println(response);
+                                                out.println(response);
+                                                out.flush();
+                                            }
+                                            else{
+                                                out.println("READ UNAUTHORIZED");
+                                                out.flush();
+                                            }
+                                        }
+
+                                        else{
+                                            out.println("READ UNAUTHORIZED");
+                                            out.flush();
+                                        }
                                     }
+
+
 
                                 }
 
