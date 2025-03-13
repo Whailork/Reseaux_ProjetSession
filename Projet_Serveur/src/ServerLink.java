@@ -31,12 +31,30 @@ public class ServerLink {
 
     public String SendLSRequest(InetAddress instigatorAddress, int instigatorPort)
     {
-        String response = "";
+        String response = "No files available";
         try{
             BufferedReader in = new BufferedReader(new InputStreamReader(linkSocket.getInputStream()));
 
             PrintWriter out = new PrintWriter(linkSocket.getOutputStream(),true);
             out.println("LS " + linkToken + " " + instigatorAddress.toString() + ":" + instigatorPort);
+            out.flush();
+
+            response = in.readLine();
+
+        }
+        catch (Exception e){
+            System.out.println(e);
+
+        }
+        return response;
+    }
+    public String SendReadRequest(String fileName,InetAddress instigatorAddress, int instigatorPort){
+        String response = "File not found";
+        try{
+            BufferedReader in = new BufferedReader(new InputStreamReader(linkSocket.getInputStream()));
+
+            PrintWriter out = new PrintWriter(linkSocket.getOutputStream(),true);
+            out.println("READ " + linkToken + " "+ fileName + " " + instigatorAddress.toString() + ":" + instigatorPort);
             out.flush();
 
             response = in.readLine();
