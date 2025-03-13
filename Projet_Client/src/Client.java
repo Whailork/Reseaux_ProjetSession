@@ -70,7 +70,7 @@ public class Client {
                     }
                 }
                 else{
-                    if(tableauInput[0].equalsIgnoreCase("ls")){
+                    if(tableauInput[0].equalsIgnoreCase("ls") || tableauInput[0].equalsIgnoreCase("read")){
                         inputToSend = inputToSend.concat(" " + socket.getInetAddress().toString() + ":" + socket.getPort());
                     }
                 }
@@ -88,10 +88,12 @@ public class Client {
                 String[] splitResponse = Response.split(" ");
                 Token = splitResponse[1];
             }
-            else{
-
-            }
             System.out.println(Response);
+            String[] splitResponse = Response.split(" ");
+            if(splitResponse[0].equalsIgnoreCase("READ-REDIRECT")){
+                String RedirectToken;
+                System.out.println("Sending READ request to " + splitResponse[1]+":"+splitResponse[2] + " with token : " + splitResponse[3]);
+            }
 
         }
     }

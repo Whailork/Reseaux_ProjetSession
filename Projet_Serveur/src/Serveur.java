@@ -5,6 +5,8 @@ import java.net.Socket;
 import java.net.UnknownHostException;
 import java.nio.file.Files;
 import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.UUID;
 
 public class Serveur {
     public static Serveur app;
@@ -15,6 +17,7 @@ public class Serveur {
     public ArrayList<String> strPeers;
 
     public ArrayList<ServerLink> connectedServers;
+    public HashMap<String,ServerLink> redirectConnections;
     public Serveur(String ipAdresse) throws Exception{
         if(ipAdresse != null && !ipAdresse.isEmpty()){
 
@@ -63,6 +66,7 @@ public class Serveur {
                 app.peersList =  new File(args[1]);
                 app.filesList = new File(args[2]);
                 app.connectedServers = new ArrayList<>();
+                app.redirectConnections = new HashMap<>();
                 System.out.println("fichiers detectes");
                 app.strPeers = new ArrayList<>();
                 app.strFiles = new ArrayList<>();
@@ -173,6 +177,47 @@ public class Serveur {
 
         }
         return availableFiles;
+    }
+    public String FindFile(String fileName,InetAddress instigatorAddress, int instigatorPort){
+        for (String file:app.strFiles) {
+            String[] strFile = file.split(" ");
+            if(fileName.equalsIgnoreCase(strFile[0])){
+                if(strFile.length > 1){
+                    return strFile[1];
+                }
+                if(instigatorAddress != server.getInetAddress() && instigatorPort != server.getLocalPort()){
+                    return server.getInetAddress() + ":" + server.getLocalPort();
+                }
+                return "local";
+            }
+        }
+        try{
+            LoadConnectedServers();
+        }
+        catch(Exception e){
+            System.out.println("error while connecting to peer servers");
+        }
+        String response = "";
+        for (ServerLink serverLink:app.connectedServers){
+            try{
+                if(instigatorAddress != serverLink.linkSocket.getInetAddress() && instigatorPort != serverLink.linkSocket.getPort()){
+                    response = serverLink.SendReadRequest(fileName,instigatorAddress,instigatorPort);
+                    if(!response.equalsIgnoreCase("")){
+                        if(instigatorAddress == server.getInetAddress() && instigatorPort == server.getLocalPort()){
+                            String[] strResponse = response.split(" ");
+                            redirectConnections.put(fileName + "/" + UUID.randomUUID().toString().replace("-","").substring(0,20),new ServerLink(new Socket(InetAddress.getByName(strResponse[1].substring(1)),Integer.parseInt(strResponse[2]))));
+                        }
+                    }
+                }
+            }
+            catch(Exception e){
+                System.out.println(e);
+            }
+
+        }
+        return response;
+
+
     }
     public ArrayList<String> getLocalFiles(Serveur server){
         ArrayList<String> localFiles = new ArrayList<>();
