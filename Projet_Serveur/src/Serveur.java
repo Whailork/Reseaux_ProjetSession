@@ -167,7 +167,18 @@ public class Serveur {
             try{
                 if(instigatorAddress != serverLink.linkSocket.getInetAddress() && instigatorPort != serverLink.linkSocket.getPort()){
                    String response = serverLink.SendLSRequest(instigatorAddress,instigatorPort);
-                    availableFiles = availableFiles.concat(response);
+                   String[] splitResponse = response.split(" ");
+                    for (String file:splitResponse) {
+                        if(!availableFiles.contains(file)){
+                            if(availableFiles.endsWith(" ")){
+                                availableFiles = availableFiles.concat(file);
+                            }
+                            else{
+                                availableFiles = availableFiles.concat(" " + file);
+                            }
+
+                        }
+                    }
                 }
 
             }
@@ -186,7 +197,7 @@ public class Serveur {
                     return strFile[1];
                 }
                 if(instigatorAddress != server.getInetAddress() && instigatorPort != server.getLocalPort()){
-                    return server.getInetAddress() + ":" + server.getLocalPort();
+                    return "READ-REDIRECT " + server.getInetAddress() + ":" + server.getLocalPort();
                 }
                 return "local";
             }
@@ -203,9 +214,12 @@ public class Serveur {
                 if(instigatorAddress != serverLink.linkSocket.getInetAddress() && instigatorPort != serverLink.linkSocket.getPort()){
                     response = serverLink.SendReadRequest(fileName,instigatorAddress,instigatorPort);
                     if(!response.equalsIgnoreCase("")){
-                        if(instigatorAddress == server.getInetAddress() && instigatorPort == server.getLocalPort()){
+                        if(instigatorAddress.toString().equals(server.getInetAddress().toString()) && instigatorPort == server.getLocalPort()){
                             String[] strResponse = response.split(" ");
-                            redirectConnections.put(fileName + "/" + UUID.randomUUID().toString().replace("-","").substring(0,20),new ServerLink(new Socket(InetAddress.getByName(strResponse[1].substring(1)),Integer.parseInt(strResponse[2]))));
+                            String[] addressInfo = strResponse[1].split(":");
+                            String redirectToken = UUID.randomUUID().toString().replace("-","").substring(0,20);
+                            redirectConnections.put(fileName + "/" + redirectToken,new ServerLink(new Socket(InetAddress.getByName(addressInfo[0].substring(1)),Integer.parseInt(addressInfo[1]))));
+                            response = response.concat(" " + redirectToken);
                         }
                     }
                 }
