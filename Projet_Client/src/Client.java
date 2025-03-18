@@ -22,6 +22,7 @@ public class Client {
         String input;
         int fragmentSize = 500;
 
+        PrintWriter out = new PrintWriter(this.socket.getOutputStream(),true);
         StringBuilder contenuMessage = new StringBuilder();
         BufferedReader bfr = new BufferedReader(new InputStreamReader(this.socket.getInputStream()));
         while(true){
@@ -37,13 +38,12 @@ public class Client {
                 else{
                     inputToSend = tableauInput[0] + " " + Token;
                 }
-
                 if(tableauInput[0].equalsIgnoreCase("file")) {
-                    if (tableauInput.length > 4) {
-                        for (int i = 4; i < tableauInput.length; i++) {
+                    if (tableauInput.length > 2) {
+                        for (int i = 2; i < tableauInput.length; i++) {
                             contenuMessage.append(tableauInput[i]);
                         }
-                    } else {
+                    }
                         if (contenuMessage.length() > fragmentSize) { // Si contenuMessage est plus grand que 500
                             int nmbFragment = contenuMessage.length() / fragmentSize;
                             for (int i = 0; i < nmbFragment; i++) {
@@ -62,11 +62,15 @@ public class Client {
                                     String fragment = contenuMessage.substring(start, end);
 
                                     // Afficher le message de type FILE (simuler l'envoi)
-                                    System.out.println("FILE|" + tableauInput[2] + "|" + offset + "|" + (isLast ? 1 : 0) + "|" + fragment);
+
+                                    String messageComplet = "FILE|" + tableauInput[2] + "|" + offset + "|" + (isLast ? 1 : 0) + "|" + fragment;
+                                    System.out.println(messageComplet);
+                                    out.println(messageComplet);
+                                    out.flush();
 
                             }
                         }
-                    }
+
                 }
                 else{
                     if(tableauInput[0].equalsIgnoreCase("ls") || tableauInput[0].equalsIgnoreCase("read")){
@@ -78,7 +82,7 @@ public class Client {
                 inputToSend = input;
                 inputToSend += " " + socket.getInetAddress().toString();
             }
-            PrintWriter out = new PrintWriter(this.socket.getOutputStream(),true);
+
             out.println(inputToSend);
             out.flush();
 
