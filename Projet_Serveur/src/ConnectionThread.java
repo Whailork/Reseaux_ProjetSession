@@ -144,6 +144,10 @@ public class ConnectionThread implements Runnable {
 
 
                                 }
+                                else{
+                                    PrintWriter out = new PrintWriter(client.getOutputStream(),true);
+                                    out.println("NO COMMAND RECOGNIZED");
+                                }
 
                             }
                         }
