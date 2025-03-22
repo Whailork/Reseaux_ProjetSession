@@ -22,30 +22,49 @@ public class Client {
         String input;
         int fragmentSize = 500;
 
+        PrintWriter out = new PrintWriter(this.socket.getOutputStream(),true);
         StringBuilder contenuMessage = new StringBuilder();
         BufferedReader bfr = new BufferedReader(new InputStreamReader(this.socket.getInputStream()));
         while(true){
 
+            // Conserve l'input utilisateur
             input = scanner.nextLine();
+
+            // Split l'input dans un tableau de string
             String[] tableauInput = input.split(" ");
+
+
+            // Register (tableau taille == 1)
+            // Ls (tableau taille == 1)
+            // Write (tableau taille == 2)
+            // File == continuation de write (tableau taille == plus grand que 2)
+            // Read (tableau taille == 2)
+
+
             if(Token != null){
 
                 String nom_fichier;
+                // write
                 if(tableauInput.length > 1){
                     inputToSend = tableauInput[0] + " " + Token + " " + tableauInput[1];
                 }
+                // LS
                 else{
                     inputToSend = tableauInput[0] + " " + Token;
                 }
 
                 if(tableauInput[0].equalsIgnoreCase("file")) {
-                    if (tableauInput.length > 4) {
-                        for (int i = 4; i < tableauInput.length; i++) {
+                    if (tableauInput.length > 2) {
+                        for (int i = 2; i < tableauInput.length; i++) {
                             contenuMessage.append(tableauInput[i]);
                         }
-                    } else {
+                    }
                         if (contenuMessage.length() > fragmentSize) { // Si contenuMessage est plus grand que 500
-                            int nmbFragment = contenuMessage.length() / fragmentSize;
+                            float nmbFragment = (float) contenuMessage.length() / fragmentSize;
+                            if (nmbFragment % 1 > 0) {
+                                nmbFragment = nmbFragment - (nmbFragment % 1);
+                                nmbFragment = nmbFragment + 1;
+                            }
                             for (int i = 0; i < nmbFragment; i++) {
 
                                     // Calculer l'offset et déterminer si c'est le dernier fragment
@@ -62,33 +81,39 @@ public class Client {
                                     String fragment = contenuMessage.substring(start, end);
 
                                     // Afficher le message de type FILE (simuler l'envoi)
-                                    System.out.println("FILE|" + tableauInput[2] + "|" + offset + "|" + (isLast ? 1 : 0) + "|" + fragment);
+
+                                    String messageComplet = tableauInput[0] + " " + tableauInput[1] + " " + offset + " " + (isLast ? 1 : 0) + " " + fragment;
+                                    System.out.println(messageComplet);
+                                    out.println(messageComplet);
+                                    out.flush();
 
                             }
                         }
-                    }
+
                 }
                 else{
+                    // LS et Read
                     if(tableauInput[0].equalsIgnoreCase("ls") || tableauInput[0].equalsIgnoreCase("read")){
                         inputToSend = inputToSend.concat(" " + socket.getInetAddress().toString() + ":" + socket.getPort());
                     }
                 }
             }
-            else{ // Register
+            else{
+                // Register
                 inputToSend = input;
                 inputToSend += " " + socket.getInetAddress().toString();
             }
-            PrintWriter out = new PrintWriter(this.socket.getOutputStream(),true);
+
             out.println(inputToSend);
             out.flush();
 
             Response = bfr.readLine();
-            if(Token == null){
-                String[] splitResponse = Response.split(" ");
+            String[] splitResponse = Response.split(" ");
+
+            if(Token == null && splitResponse[0].equalsIgnoreCase("REGISTERED")){
                 Token = splitResponse[1];
             }
             System.out.println(Response);
-            String[] splitResponse = Response.split(" ");
             if(splitResponse[0].equalsIgnoreCase("READ-REDIRECT")){
                 String RedirectToken = splitResponse[2];
                 System.out.println("Sending READ request to " + splitResponse[1] + " with token : " + splitResponse[2]);
