@@ -99,9 +99,13 @@ public class ConnectionThread implements Runnable {
                                         File newFile = new File(serveurObject.FilesPath.replaceAll("\"","")+"\\"+nomFicher+".txt");
                                         if(newFile.createNewFile()){
                                             serveurObject.strFiles.add(nomFicher);
+                                            FileWriter fileWriter1 = new FileWriter(newFile);
+                                            fileWriter1.write(contenuFichier);
+                                            fileWriter1.close();
                                             try{
-                                                FileWriter fileWriter = new FileWriter(serveurObject.filesList);
-                                                fileWriter.write("\n"+nomFicher);
+                                                FileWriter fileWriter2 = new FileWriter(serveurObject.filesList);
+                                                fileWriter2.write(nomFicher);
+                                                fileWriter2.close();
                                             }
                                             catch(Exception e){
                                                 System.out.println(e.toString());

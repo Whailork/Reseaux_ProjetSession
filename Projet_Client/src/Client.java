@@ -23,7 +23,6 @@ public class Client {
         int fragmentSize = 500;
 
         PrintWriter out = new PrintWriter(this.socket.getOutputStream(),true);
-        StringBuilder contenuMessage = new StringBuilder();
         BufferedReader bfr = new BufferedReader(new InputStreamReader(this.socket.getInputStream()));
         while(true){
 
@@ -47,19 +46,22 @@ public class Client {
                 // write
                 if(tableauInput.length > 1){
                     inputToSend = tableauInput[0] + " " + Token + " " + tableauInput[1];
+
                 }
                 // LS
                 else{
                     inputToSend = tableauInput[0] + " " + Token;
                 }
 
-                if(tableauInput[0].equalsIgnoreCase("file")) {
-                    if (tableauInput.length > 2) {
-                        for (int i = 2; i < tableauInput.length; i++) {
-                            contenuMessage.append(tableauInput[i]);
-                            contenuMessage.append(" ");
+                switch (tableauInput[0].toUpperCase()){
+                    case "FILE":
+                        StringBuilder contenuMessage = new StringBuilder();
+                        if (tableauInput.length > 2) {
+                            for (int i = 2; i < tableauInput.length; i++) {
+                                contenuMessage.append(tableauInput[i]);
+                                contenuMessage.append(" ");
+                            }
                         }
-                    }
                         if (contenuMessage.length() > fragmentSize) { // Si contenuMessage est plus grand que 500
                             float nmbFragment = (float) contenuMessage.length() / fragmentSize;
                             if (nmbFragment % 1 > 0) {
@@ -68,25 +70,25 @@ public class Client {
                             }
                             for (int i = 0; i < nmbFragment; i++) {
 
-                                    // Calculer l'offset et déterminer si c'est le dernier fragment
-                                    int offset = (i * fragmentSize);
-                                    boolean isLast = false;
+                                // Calculer l'offset et déterminer si c'est le dernier fragment
+                                int offset = (i * fragmentSize);
+                                boolean isLast = false;
 
-                                    if (i == nmbFragment - 1) {
-                                        isLast = true;
-                                    }
+                                if (i == nmbFragment - 1) {
+                                    isLast = true;
+                                }
 
-                                    // Découper le fichier en morceaux de 500 caractères
-                                    int start = i * fragmentSize;
-                                    int end = Math.min(start + fragmentSize, contenuMessage.length());
-                                    String fragment = contenuMessage.substring(start, end);
+                                // Découper le fichier en morceaux de 500 caractères
+                                int start = i * fragmentSize;
+                                int end = Math.min(start + fragmentSize, contenuMessage.length());
+                                String fragment = contenuMessage.substring(start, end);
 
-                                    // Afficher le message de type FILE (simuler l'envoi)
+                                // Afficher le message de type FILE (simuler l'envoi)
 
-                                    String messageComplet = tableauInput[0] + " " + tableauInput[1] + " " + offset + " " + (isLast ? 1 : 0) + " " + fragment;
-                                    System.out.println(messageComplet);
-                                    out.println(messageComplet);
-                                    out.flush();
+                                String messageComplet = tableauInput[0] + " " + tableauInput[1] + " " + offset + " " + (isLast ? 1 : 0) + " " + fragment;
+                                System.out.println(messageComplet);
+                                out.println(messageComplet);
+                                out.flush();
 
                             }
                         }
@@ -97,22 +99,32 @@ public class Client {
                             out.flush();
                         }
 
-                }
-                else{
-                    // LS et Read
-                    if(tableauInput[0].equalsIgnoreCase("ls") || tableauInput[0].equalsIgnoreCase("read")){
+                        break;
+                    case "LS":
                         inputToSend = inputToSend.concat(" " + socket.getInetAddress().toString() + ":" + socket.getPort());
-                    }
+                        out.println(inputToSend);
+                        out.flush();
+                        break;
+                    case "READ":
+                        inputToSend = inputToSend.concat(" " + socket.getInetAddress().toString() + ":" + socket.getPort());
+                        out.println(inputToSend);
+                        out.flush();
+                        break;
+                    default:
+                        out.println(inputToSend);
+                        out.flush();
+                        break;
                 }
             }
             else{
                 // Register
                 inputToSend = input;
                 inputToSend += " " + socket.getInetAddress().toString();
+                out.println(inputToSend);
+                out.flush();
             }
 
-            out.println(inputToSend);
-            out.flush();
+
 
             Response = bfr.readLine();
             String[] splitResponse = Response.split(" ");
