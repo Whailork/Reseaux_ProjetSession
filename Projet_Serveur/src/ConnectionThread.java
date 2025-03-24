@@ -165,7 +165,7 @@ public class ConnectionThread implements Runnable {
 
                                                     // Afficher le message de type FILE (simuler l'envoi)
 
-                                                    String messageComplet = fileName + " " + offset2 + " " + (isLast2 ? 1 : 0) + " " + fragment;
+                                                    String messageComplet = "FILE" + " " + fileName + " " + offset2 + " " + (isLast2 ? 1 : 0) + " " + fragment;
                                                     System.out.println(messageComplet);
                                                     out.println(messageComplet);
                                                     out.flush();
@@ -173,7 +173,7 @@ public class ConnectionThread implements Runnable {
                                                 }
                                             }
                                             else{
-                                                String messageComplet = fileName + " " + 0 + " " + 1 + " " + messageToFragment;
+                                                String messageComplet = "FILE"+ " " + fileName + " " + 0 + " " + 1 + " " + messageToFragment;
                                                 System.out.println(messageComplet);
                                                 out.println(messageComplet);
                                                 out.flush();
@@ -205,9 +205,6 @@ public class ConnectionThread implements Runnable {
                                             out.flush();
                                         }
                                     }
-
-
-
                                 }
                                 else{
                                     PrintWriter out = new PrintWriter(client.getOutputStream(),true);
