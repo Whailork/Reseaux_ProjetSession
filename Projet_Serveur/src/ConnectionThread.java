@@ -163,6 +163,7 @@ public class ConnectionThread implements Runnable {
                                                     int end = Math.min(start + 500, messageToFragment.length());
                                                     String fragment = messageToFragment.substring(start, end);
 
+
                                                     // Afficher le message de type FILE (simuler l'envoi)
 
                                                     String messageComplet = "FILE" + " " + fileName + " " + offset2 + " " + (isLast2 ? 1 : 0) + " " + fragment;
@@ -193,6 +194,7 @@ public class ConnectionThread implements Runnable {
                                                 System.out.println(response);
                                                 out.println(response);
                                                 out.flush();
+
                                             }
                                             else{
                                                 out.println("READ UNAUTHORIZED");
