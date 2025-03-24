@@ -258,7 +258,8 @@ public class Serveur {
         strFiles = app.strFiles;
         for (String file:strFiles) {
             if(fileName.equalsIgnoreCase(file)){
-                BufferedReader bfr = new BufferedReader(new FileReader(file));
+                File newFile = new File(FilesPath.replaceAll("\"","")+"\\"+fileName+".txt");
+                BufferedReader bfr = new BufferedReader(new FileReader(newFile));
                 String line;
                 while ((line = bfr.readLine()) != null) {
                     message.append(line).append("\n");
