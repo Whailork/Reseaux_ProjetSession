@@ -15,9 +15,10 @@ public class Serveur {
     public File filesList;
     public ArrayList<String> strFiles;
     public ArrayList<String> strPeers;
-
+    boolean IsQuerying;
     public ArrayList<ServerLink> connectedServers;
     public HashMap<String,ServerLink> redirectConnections;
+    public String FilesPath;
     public Serveur(String ipAdresse) throws Exception{
         if(ipAdresse != null && !ipAdresse.isEmpty()){
 
@@ -60,9 +61,9 @@ public class Serveur {
         }
 
         if(args != null){
-            if(args.length > 2){
+            if(args.length > 3){
 
-
+                app.FilesPath = args[3];
                 app.peersList =  new File(args[1]);
                 app.filesList = new File(args[2]);
                 app.connectedServers = new ArrayList<>();
@@ -148,13 +149,6 @@ public class Serveur {
     }
 
     public String findAvailableFiles(InetAddress instigatorAddress, int instigatorPort){
-        try{
-            LoadConnectedServers();
-        }
-        catch(Exception e){
-            System.out.println("error while connecting to peer servers");
-        }
-
         String availableFiles = "";
         //load local files
         for (String file:app.strFiles) {
@@ -162,34 +156,46 @@ public class Serveur {
                 availableFiles = availableFiles.concat(file + " ");
             }
         }
-        //search for files on connected servers
-        for (ServerLink serverLink:app.connectedServers) {
+        if(!IsQuerying){
             try{
-                if(instigatorAddress != serverLink.linkSocket.getInetAddress() && instigatorPort != serverLink.linkSocket.getPort()){
-                   String response = serverLink.SendLSRequest(instigatorAddress,instigatorPort);
-                   String[] splitResponse = response.split(" ");
-                    for (String file:splitResponse) {
-                        if(!availableFiles.contains(file)){
-                            if(availableFiles.endsWith(" ")){
-                                availableFiles = availableFiles.concat(file);
-                            }
-                            else{
-                                availableFiles = availableFiles.concat(" " + file);
-                            }
+                LoadConnectedServers();
+            }
+            catch(Exception e){
+                System.out.println("error while connecting to peer servers");
+            }
+            IsQuerying = true;
+            //search for files on connected servers
+            for (ServerLink serverLink:app.connectedServers) {
+                try{
+                    if(instigatorAddress != serverLink.linkSocket.getInetAddress() && instigatorPort != serverLink.linkSocket.getPort()){
+                        String response = serverLink.SendLSRequest(instigatorAddress,instigatorPort);
+                        String[] splitResponse = response.split(" ");
+                        for (String file:splitResponse) {
+                            if(!availableFiles.contains(file)){
+                                if(availableFiles.endsWith(" ")){
+                                    availableFiles = availableFiles.concat(file);
+                                }
+                                else{
+                                    availableFiles = availableFiles.concat(" " + file);
+                                }
 
+                            }
                         }
                     }
+
+                }
+                catch(Exception e){
+                    System.out.println(e);
                 }
 
             }
-            catch(Exception e){
-                System.out.println(e);
-            }
-
+            IsQuerying = false;
         }
+
         return availableFiles;
     }
     public String FindFile(String fileName,InetAddress instigatorAddress, int instigatorPort){
+        String response = "";
         for (String file:app.strFiles) {
             String[] strFile = file.split(" ");
             if(fileName.equalsIgnoreCase(strFile[0])){
@@ -202,33 +208,37 @@ public class Serveur {
                 return "local";
             }
         }
-        try{
-            LoadConnectedServers();
-        }
-        catch(Exception e){
-            System.out.println("error while connecting to peer servers");
-        }
-        String response = "";
-        for (ServerLink serverLink:app.connectedServers){
+        if(!IsQuerying){
             try{
-                if(instigatorAddress != serverLink.linkSocket.getInetAddress() && instigatorPort != serverLink.linkSocket.getPort()){
-                    response = serverLink.SendReadRequest(fileName,instigatorAddress,instigatorPort);
-                    if(!response.equalsIgnoreCase("")){
-                        if(instigatorAddress.toString().equals(server.getInetAddress().toString()) && instigatorPort == server.getLocalPort()){
-                            String[] strResponse = response.split(" ");
-                            String[] addressInfo = strResponse[1].split(":");
-                            String redirectToken = UUID.randomUUID().toString().replace("-","").substring(0,20);
-                            redirectConnections.put(fileName + "/" + redirectToken,new ServerLink(new Socket(InetAddress.getByName(addressInfo[0].substring(1)),Integer.parseInt(addressInfo[1]))));
-                            response = response.concat(" " + redirectToken);
+                LoadConnectedServers();
+            }
+            catch(Exception e){
+                System.out.println("error while connecting to peer servers");
+            }
+            IsQuerying = true;
+            for (ServerLink serverLink:app.connectedServers){
+                try{
+                    if(instigatorAddress != serverLink.linkSocket.getInetAddress() && instigatorPort != serverLink.linkSocket.getPort()){
+                        response = serverLink.SendReadRequest(fileName,instigatorAddress,instigatorPort);
+                        if(!response.equalsIgnoreCase("")){
+                            if(instigatorAddress.toString().equals(server.getInetAddress().toString()) && instigatorPort == server.getLocalPort()){
+                                String[] strResponse = response.split(" ");
+                                String[] addressInfo = strResponse[1].split(":");
+                                String redirectToken = UUID.randomUUID().toString().replace("-","").substring(0,20);
+                                redirectConnections.put(fileName + "/" + redirectToken,new ServerLink(new Socket(InetAddress.getByName(addressInfo[0].substring(1)),Integer.parseInt(addressInfo[1]))));
+                                response = response.concat(" " + redirectToken);
+                            }
                         }
                     }
                 }
-            }
-            catch(Exception e){
-                System.out.println(e);
-            }
+                catch(Exception e){
+                    System.out.println(e);
+                }
 
+            }
+            IsQuerying = false;
         }
+
         return response;
 
 

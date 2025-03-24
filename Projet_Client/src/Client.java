@@ -57,6 +57,7 @@ public class Client {
                     if (tableauInput.length > 2) {
                         for (int i = 2; i < tableauInput.length; i++) {
                             contenuMessage.append(tableauInput[i]);
+                            contenuMessage.append(" ");
                         }
                     }
                         if (contenuMessage.length() > fragmentSize) { // Si contenuMessage est plus grand que 500
@@ -88,6 +89,12 @@ public class Client {
                                     out.flush();
 
                             }
+                        }
+                        else{
+                            String messageComplet = tableauInput[0] + " " + tableauInput[1] + " " + 0 + " " + 1 + " " + contenuMessage;
+                            System.out.println(messageComplet);
+                            out.println(messageComplet);
+                            out.flush();
                         }
 
                 }

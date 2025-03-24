@@ -10,6 +10,7 @@ public class ServerLink {
     public String linkToken;
 
 
+
     public ServerLink(Socket socket){
         linkSocket = socket;
         try{
