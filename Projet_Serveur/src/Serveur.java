@@ -252,5 +252,21 @@ public class Serveur {
         }
         return localFiles;
     }
+
+    public String getFileMessageLocal(String fileName) throws IOException {
+        StringBuilder message = new StringBuilder();
+        strFiles = app.strFiles;
+        for (String file:strFiles) {
+            if(fileName.equalsIgnoreCase(file)){
+                BufferedReader bfr = new BufferedReader(new FileReader(file));
+                String line;
+                while ((line = bfr.readLine()) != null) {
+                    message.append(line).append("\n");
+                }
+            }
+        }
+
+        return message.toString();
+    }
 }
 
