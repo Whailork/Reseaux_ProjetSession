@@ -74,7 +74,7 @@ public class ConnectionThread implements Runnable {
                                 PrintWriter out = new PrintWriter(client.getOutputStream(),true);
                                 if(dataArray[1].equalsIgnoreCase(clientToken) /* && verifier si le file existe dans la liste du server*/){
                                     writeAuthorized = true;
-                                    out.println("WRITE AUTHORIZED");
+                                    out.println("WRITE BEGIN");
                                     out.flush();
                                 }
                                 else{
