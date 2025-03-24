@@ -1,6 +1,4 @@
-import java.io.BufferedReader;
-import java.io.InputStreamReader;
-import java.io.PrintWriter;
+import java.io.*;
 import java.net.InetAddress;
 import java.net.ServerSocket;
 import java.net.Socket;
@@ -32,6 +30,7 @@ public class ConnectionThread implements Runnable {
             int offset;
             int isLast;
             String contenuFichier;
+            String contenuFragment;
 
 
             BufferedReader in = new BufferedReader(new InputStreamReader(client.getInputStream()));
@@ -92,11 +91,32 @@ public class ConnectionThread implements Runnable {
                                     nomFicher = dataArray[1];
                                     offset = Integer.parseInt(dataArray[2]);
                                     isLast = Integer.parseInt(dataArray[3]);
-                                    contenuFichier = dataArray[4];
+                                    contenuFragment = dataArray[4];
+                                    contenuFichier = "";
+                                    contenuFichier = contenuFichier.concat(contenuFragment);
+                                    if(isLast == 1){
+                                        writeAuthorized = false;
+                                        File newFile = new File(serveurObject.FilesPath.replaceAll("\"","")+"\\"+nomFicher+".txt");
+                                        if(newFile.createNewFile()){
+                                            serveurObject.strFiles.add(nomFicher);
+                                            try{
+                                                FileWriter fileWriter = new FileWriter(serveurObject.filesList);
+                                                fileWriter.write("\n"+nomFicher);
+                                            }
+                                            catch(Exception e){
+                                                System.out.println(e.toString());
+                                            }
+                                            out.println("FILE SAVED");
+                                            out.flush();
+                                        }
+                                    }
+                                    else{
+                                        out.println("FRAGMENT RECEIVED");
+                                        out.flush();
+                                    }
 
 
-                                    out.println("FILE AUTHORIZED");
-                                    out.flush();
+
                                 }
                                 else  {
                                     out.println("FILE UNAUTHORIZED");

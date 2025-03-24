@@ -18,6 +18,7 @@ public class Serveur {
     boolean IsQuerying;
     public ArrayList<ServerLink> connectedServers;
     public HashMap<String,ServerLink> redirectConnections;
+    public String FilesPath;
     public Serveur(String ipAdresse) throws Exception{
         if(ipAdresse != null && !ipAdresse.isEmpty()){
 
@@ -60,9 +61,9 @@ public class Serveur {
         }
 
         if(args != null){
-            if(args.length > 2){
+            if(args.length > 3){
 
-
+                app.FilesPath = args[3];
                 app.peersList =  new File(args[1]);
                 app.filesList = new File(args[2]);
                 app.connectedServers = new ArrayList<>();
