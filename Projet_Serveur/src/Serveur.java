@@ -149,11 +149,32 @@ public class Serveur {
         String availableFiles = "";
         //load local files
         for (String file:app.strFiles) {
+            //if local file
             if(!(file.split(" ").length > 1)){
                 availableFiles = availableFiles.concat(file + " ");
             }
+            //check servers connection
+            else{
+                try{
+                    LoadConnectedServers();
+                    String[] serverAddress = file.split(" ")[1].split(":");
+                    if(serverAddress.length > 1){
+                        findConnectedServer(InetAddress.getByName(serverAddress[0].replace("/","")),Integer.parseInt(serverAddress[1]));
+                    }
+                    else{
+                        //nomenclature pas conforme
+                        //TODO: avertir le user que le fichier files est invalide
+                    }
+
+                }
+                catch (Exception e){
+
+                }
+
+            }
         }
-        if(!IsQuerying){
+
+        /*if(!IsQuerying){
             try{
                 LoadConnectedServers();
             }
@@ -187,7 +208,7 @@ public class Serveur {
 
             }
             IsQuerying = false;
-        }
+        }*/
 
         return availableFiles;
     }
