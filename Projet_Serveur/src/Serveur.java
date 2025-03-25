@@ -124,19 +124,16 @@ public class Serveur {
                         else{
                             System.out.println("server already connected");
                         }
-
                     }
                     catch(Exception e){
                         System.out.println("cannot connect to server : " + peerAddress);
                     }
-
                 }
                 else {
                     System.out.println("cannot connect to server : " + peerAddress);
                 }
             }
         }
-
     }
 
     public ServerLink findConnectedServer(InetAddress address, int port){
