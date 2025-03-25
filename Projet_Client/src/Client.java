@@ -4,6 +4,7 @@ import java.io.InputStreamReader;
 import java.io.PrintWriter;
 import java.net.InetAddress;
 import java.net.Socket;
+import java.util.Objects;
 import java.util.Scanner;
 
 public class Client {
@@ -23,16 +24,19 @@ public class Client {
         String inputToSend;
         String input;
         int fragmentSize = 500;
+        StringBuilder fullMessage = new StringBuilder();
+        boolean isFragmenting = false;
+        String[] tableauInput = new String[0];
 
         PrintWriter out = new PrintWriter(this.socket.getOutputStream(),true);
         BufferedReader bfr = new BufferedReader(new InputStreamReader(this.socket.getInputStream()));
         while(true){
-
+            if(!isFragmenting){
             // Conserve l'input utilisateur
             input = scanner.nextLine();
 
             // Split l'input dans un tableau de string
-            String[] tableauInput = input.split(" ");
+                tableauInput = input.split(" ");
 
 
             // Register (tableau taille == 1)
@@ -125,7 +129,7 @@ public class Client {
                 out.println(inputToSend);
                 out.flush();
             }
-
+            }
 
 
             Response = bfr.readLine();
@@ -149,7 +153,30 @@ public class Client {
                 Response = RedirectBfr.readLine();
                 System.out.println(Response);
             }
+            if (splitResponse[0].equalsIgnoreCase("FILE")){
+                for (int i = 4; i < splitResponse.length; i++) {
+                    fullMessage.append(splitResponse[i]);
+                    fullMessage.append(" ");
+                }
+                if (splitResponse[3].equals("0")) {
+                    isFragmenting = true;
+
+                    out.println("FRAGMENT RECEIVED");
+                    out.flush();
+
+                }
+                else{
+                    isFragmenting = false;
+                    System.out.println(fullMessage);
+                    fullMessage = new StringBuilder();
+                    out.println("MESSAGE RECEIVED");
+                    out.flush();
+                }
+
+            }
+
         }
+
     }
 
     public static void main(String[] args) throws Exception {
