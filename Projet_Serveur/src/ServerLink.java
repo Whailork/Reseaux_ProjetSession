@@ -10,7 +10,6 @@ public class ServerLink {
     public String linkToken;
 
 
-
     public ServerLink(Socket socket){
         linkSocket = socket;
         try{
@@ -49,15 +48,30 @@ public class ServerLink {
         }
         return response;
     }
+    public String ReceiveFragment(){
+        String response = "";
+        try{
+            PrintWriter out = new PrintWriter(linkSocket.getOutputStream(),true);
+            BufferedReader in = new BufferedReader(new InputStreamReader(linkSocket.getInputStream()));
+            out.println("Fragment Received");
+            out.flush();
+
+            response = in.readLine();
+        }
+        catch(Exception e){
+            System.out.println(e.toString());
+        }
+        return response;
+    }
     public String SendReadRequest(String fileName,InetAddress instigatorAddress, int instigatorPort){
         String response = "File not found";
         try{
             BufferedReader in = new BufferedReader(new InputStreamReader(linkSocket.getInputStream()));
 
             PrintWriter out = new PrintWriter(linkSocket.getOutputStream(),true);
+
             out.println("READ " + linkToken + " "+ fileName + " " + instigatorAddress.toString() + ":" + instigatorPort);
             out.flush();
-
             response = in.readLine();
 
         }

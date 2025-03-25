@@ -138,73 +138,109 @@ public class ConnectionThread implements Runnable {
                                     out.flush();
                                 }
                             }
-
                             else{
                                 //Read
                                 if(dataArray[0].equalsIgnoreCase("READ")){
                                     PrintWriter out = new PrintWriter(client.getOutputStream(),true);
-                                    if(dataArray[1].equalsIgnoreCase(clientToken) && clientAdress.equalsIgnoreCase(client.getInetAddress().toString())){
-                                        String fileName = dataArray[2];
-                                        String[] instigatorInfo = dataArray[3].split(":");
-                                        String response = "";
-                                        response = serveurObject.FindFile(fileName,InetAddress.getByName(instigatorInfo[0].substring(1)),Integer.parseInt(instigatorInfo[1]));
+                                    if(dataArray[1].equalsIgnoreCase(clientToken)){
 
-                                        if (response == "local"){
-                                            String messageToFragment = serveurObject.getFileMessageLocal(fileName);;
+                                            String fileName = dataArray[2];
+                                            String[] instigatorInfo = dataArray[3].split(":");
+                                            String response = "";
+                                            response = serveurObject.FindFile(fileName,InetAddress.getByName(instigatorInfo[0].substring(1)),Integer.parseInt(instigatorInfo[1]));
 
-                                            if (messageToFragment.length() > 500) { // Si contenuMessage est plus grand que 500
+                                            if (response == "local"){
+                                                String messageToFragment = serveurObject.getFileMessageLocal(fileName);;
 
-                                                float nmbFragment = (float) messageToFragment.length() / 500;
-                                                if (nmbFragment % 1 > 0) {
-                                                    nmbFragment = nmbFragment - (nmbFragment % 1);
-                                                    nmbFragment = nmbFragment + 1;
-                                                }
-                                                for (int i = 0; i < nmbFragment; i++) {
+                                                if (messageToFragment.length() > 500) { // Si contenuMessage est plus grand que 500
 
-                                                    // Calculer l'offset et déterminer si c'est le dernier fragment
-                                                    int offset2 = (i * 500);
-                                                    boolean isLast2 = false;
-
-                                                    if (i == nmbFragment - 1) {
-                                                        isLast2 = true;
+                                                    float nmbFragment = (float) messageToFragment.length() / 500;
+                                                    if (nmbFragment % 1 > 0) {
+                                                        nmbFragment = nmbFragment - (nmbFragment % 1);
+                                                        nmbFragment = nmbFragment + 1;
                                                     }
+                                                    for (int i = 0; i < nmbFragment; i++) {
 
-                                                    // Découper le fichier en morceaux de 500 caractères
-                                                    int start = i * 500;
-                                                    int end = Math.min(start + 500, messageToFragment.length());
-                                                    String fragment = messageToFragment.substring(start, end);
+                                                        // Calculer l'offset et déterminer si c'est le dernier fragment
+                                                        int offset2 = (i * 500);
+                                                        boolean isLast2 = false;
+
+                                                        if (i == nmbFragment - 1) {
+                                                            isLast2 = true;
+                                                        }
+
+                                                        // Découper le fichier en morceaux de 500 caractères
+                                                        int start = i * 500;
+                                                        int end = Math.min(start + 500, messageToFragment.length());
+                                                        String fragment = messageToFragment.substring(start, end);
 
 
-                                                    // Afficher le message de type FILE (simuler l'envoi)
+                                                        // Afficher le message de type FILE (simuler l'envoi)
 
-                                                    String messageComplet = "FILE" + " " + fileName + " " + offset2 + " " + (isLast2 ? 1 : 0) + " " + fragment;
+                                                        String messageComplet = "FILE" + " " + fileName + " " + offset2 + " " + (isLast2 ? 1 : 0) + " " + fragment;
+                                                        System.out.println(messageComplet);
+                                                        out.println(messageComplet);
+                                                        out.flush();
+                                                        System.out.println(in.readLine());
+
+                                                    }
+                                                }
+                                                else{
+                                                    String messageComplet = "FILE"+ " " + fileName + " " + 0 + " " + 1 + " " + messageToFragment;
                                                     System.out.println(messageComplet);
                                                     out.println(messageComplet);
                                                     out.flush();
-
                                                 }
                                             }
-                                            else{
-                                                String messageComplet = "FILE"+ " " + fileName + " " + 0 + " " + 1 + " " + messageToFragment;
-                                                System.out.println(messageComplet);
-                                                out.println(messageComplet);
-                                                out.flush();
-                                            }
-                                        }
-                                        System.out.println(response);
-                                        out.println(response);
-                                        out.flush();
+                                            System.out.println(response);
+                                            out.println(response);
+                                            out.flush();
                                     }
                                     else{
+                                        //if it was read from read redirect
                                         if(dataArray.length > 3){
                                             String fileName = dataArray[2];
                                             String[] instigatorInfo = dataArray[3].split(":");
                                             String response = "";
+
                                             if(serveurObject.redirectConnections.containsKey(fileName+"/"+dataArray[1])){
+                                                //transfer first fragment
                                                 response = serveurObject.redirectConnections.get(fileName+"/"+dataArray[1]).SendReadRequest(fileName,InetAddress.getByName(instigatorInfo[0].substring(1)),Integer.parseInt(instigatorInfo[1]));
-                                                System.out.println(response);
-                                                out.println(response);
-                                                out.flush();
+                                                String[] responseSplit = response.split(" ");
+                                                String Message = "";
+                                                boolean isFragmenting = false;
+                                                if (responseSplit[0].equalsIgnoreCase("FILE")){
+                                                    if(responseSplit[3].equals("0")){
+                                                        isFragmenting = true;
+                                                    }
+                                                    else{
+                                                        isFragmenting = false;
+                                                    }
+                                                    out.println(response);
+                                                    out.flush();
+                                                    //if more, loop until last fragment
+                                                    while (isFragmenting){
+                                                        response = serveurObject.redirectConnections.get(fileName+"/"+dataArray[1]).ReceiveFragment();
+                                                        responseSplit = response.split(" ");
+                                                        if (responseSplit[3].equals("0"))
+                                                        {
+                                                            out.println(response);
+                                                            out.flush();
+                                                            System.out.println(response);
+                                                        }
+                                                        else{
+                                                            isFragmenting = false;
+                                                            out.println(response);
+                                                            out.flush();
+                                                            System.out.println(response);
+                                                        }
+                                                    }
+                                                }
+                                                else{
+                                                    System.out.println(response);
+                                                    out.println(response);
+                                                    out.flush();
+                                                }
 
                                             }
                                             else{

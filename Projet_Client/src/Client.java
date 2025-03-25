@@ -143,15 +143,24 @@ public class Client {
                 String RedirectToken = splitResponse[2];
                 System.out.println("Sending READ request to " + splitResponse[1] + " with token : " + splitResponse[2]);
                 String[] adress = splitResponse[1].split(":");
-                RedirectSocket = new Socket(adress[0].replace("/",""),Integer.parseInt(adress[1]));
-                PrintWriter RedirectOut = new PrintWriter(this.socket.getOutputStream(),true);
-                BufferedReader RedirectBfr = new BufferedReader(new InputStreamReader(this.socket.getInputStream()));
+                //RedirectSocket = new Socket(adress[0].replace("/",""),Integer.parseInt(adress[1]));
+
                 String strRedirect = "READ " + RedirectToken + " " + tableauInput[1] + " " + splitResponse[1];
 
-                RedirectOut.println(strRedirect);
-                RedirectOut.flush();
-                Response = RedirectBfr.readLine();
+                out.println(strRedirect);
+                out.flush();
+                Response = bfr.readLine();
                 System.out.println(Response);
+                String[] responseSplit = Response.split(" ");
+                if (responseSplit[0].equalsIgnoreCase("FILE")){
+                    if(responseSplit[3].equals("0")){
+                        isFragmenting = true;
+                        for (int i = 4; i < responseSplit.length; i++) {
+                            fullMessage.append(responseSplit[i]);
+                            fullMessage.append(" ");
+                        }
+                    }
+                }
             }
             if (splitResponse[0].equalsIgnoreCase("FILE")){
                 for (int i = 4; i < splitResponse.length; i++) {
