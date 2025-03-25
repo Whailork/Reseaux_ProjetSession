@@ -12,6 +12,8 @@ public class Client {
     private Scanner scanner;
     private String Token;
     private String Response;
+
+    Socket RedirectSocket;
     private Client(InetAddress serverAddress, int serverPort) throws Exception{
         this.socket = new Socket(serverAddress, serverPort);
         this.scanner = new Scanner(System.in);
@@ -140,10 +142,15 @@ public class Client {
             if(splitResponse[0].equalsIgnoreCase("READ-REDIRECT")){
                 String RedirectToken = splitResponse[2];
                 System.out.println("Sending READ request to " + splitResponse[1] + " with token : " + splitResponse[2]);
+                String[] adress = splitResponse[1].split(":");
+                RedirectSocket = new Socket(adress[0].replace("/",""),Integer.parseInt(adress[1]));
+                PrintWriter RedirectOut = new PrintWriter(this.socket.getOutputStream(),true);
+                BufferedReader RedirectBfr = new BufferedReader(new InputStreamReader(this.socket.getInputStream()));
                 String strRedirect = "READ " + RedirectToken + " " + tableauInput[1] + " " + splitResponse[1];
-                out.println(strRedirect);
-                out.flush();
-                Response = bfr.readLine();
+
+                RedirectOut.println(strRedirect);
+                RedirectOut.flush();
+                Response = RedirectBfr.readLine();
                 System.out.println(Response);
             }
             if (splitResponse[0].equalsIgnoreCase("FILE")){

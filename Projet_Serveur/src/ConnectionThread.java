@@ -103,8 +103,19 @@ public class ConnectionThread implements Runnable {
                                             fileWriter1.write(contenuFichier);
                                             fileWriter1.close();
                                             try{
+                                                String fileContent = "";
+                                                //load files list for future use
+                                                FileReader fl2 = new FileReader(serveurObject.filesList);
+                                                BufferedReader bfr2 = new BufferedReader(fl2);
+                                                String line2 = "";
+                                                while ((line2 = bfr2.readLine()) != null){
+                                                    fileContent = fileContent.concat("\n"+line2);
+                                                }
+                                                fl2.close();
+                                                fileContent = fileContent.concat("\n" +nomFicher);
+
                                                 FileWriter fileWriter2 = new FileWriter(serveurObject.filesList);
-                                                fileWriter2.write(nomFicher);
+                                                fileWriter2.write(fileContent);
                                                 fileWriter2.close();
                                             }
                                             catch(Exception e){
