@@ -116,13 +116,22 @@ public class Serveur {
                 if(InetAddress.getByName(addressInfo[0]).isReachable(100)){
                     InetAddress address = InetAddress.getByName(addressInfo[0]);
                     try{
-                        if(findConnectedServer(address,Integer.parseInt(addressInfo[1])) == null){
+                        ServerLink serverLink = findConnectedServer(address,Integer.parseInt(addressInfo[1]));
+                        if(serverLink == null){
+
                             Socket socket = new Socket(address, Integer.parseInt(addressInfo[1]));
-                            ServerLink serverLink = new ServerLink(socket);
-                            connectedServers.add(serverLink);
+                            ServerLink newServerLink = new ServerLink(socket);
+                            connectedServers.add(newServerLink);
                         }
                         else{
-                            System.out.println("server already connected");
+                            if(serverLink.linkSocket.isConnected()){
+                                connectedServers.remove(serverLink);
+                                System.out.println("connexion to server lost : " + peerAddress);
+                            }
+                            else{
+                                System.out.println("server already connected");
+                            }
+
                         }
                     }
                     catch(Exception e){
@@ -138,7 +147,8 @@ public class Serveur {
 
     public ServerLink findConnectedServer(InetAddress address, int port){
         for (ServerLink serverLink:connectedServers) {
-            if(serverLink.linkSocket.getInetAddress() == address && serverLink.linkSocket.getPort() == port){
+
+            if(serverLink.linkSocket.getInetAddress().equals(address)  && serverLink.linkSocket.getPort() == port){
                 return serverLink;
             }
         }
@@ -159,7 +169,10 @@ public class Serveur {
                     LoadConnectedServers();
                     String[] serverAddress = file.split(" ")[1].split(":");
                     if(serverAddress.length > 1){
-                        findConnectedServer(InetAddress.getByName(serverAddress[0].replace("/","")),Integer.parseInt(serverAddress[1]));
+                        ServerLink serverLink = findConnectedServer(InetAddress.getByName(serverAddress[0].replace("/","")),Integer.parseInt(serverAddress[1]));
+                        if(serverLink != null){
+                            availableFiles = availableFiles.concat(file.split(" ")[0] + " ");
+                        }
                     }
                     else{
                         //nomenclature pas conforme
@@ -168,7 +181,7 @@ public class Serveur {
 
                 }
                 catch (Exception e){
-
+                    System.out.println(e.toString());
                 }
 
             }
