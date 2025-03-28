@@ -37,14 +37,14 @@ public class ConnectionThread implements Runnable {
             while ((data = in.readLine()) != null) {
                 //traitement des types  de messages
                 //Register
-                String[] dataArray = data.split(" ");
+                String[] dataArray = data.split("\\|");
                 if(dataArray.length > 1){
                     if(dataArray[0].equalsIgnoreCase("REGISTER")){
                         clientToken = UUID.randomUUID().toString().replace("-","").substring(0,20);
                         clientAdress = dataArray[1];
                         System.out.println(clientAdress);
                         PrintWriter out = new PrintWriter(client.getOutputStream(),true);
-                        out.println("REGISTERED " + clientToken);
+                        out.println("REGISTERED|" + clientToken);
                         out.flush();
                         System.out.println(clientToken);
 
@@ -177,7 +177,7 @@ public class ConnectionThread implements Runnable {
 
                                                         // Afficher le message de type FILE (simuler l'envoi)
 
-                                                        String messageComplet = "FILE" + " " + fileName + " " + offset2 + " " + (isLast2 ? 1 : 0) + " " + fragment;
+                                                        String messageComplet = "FILE" + "|" + fileName + "|" + offset2 + "|" + (isLast2 ? 1 : 0) + "|" + fragment;
                                                         System.out.println(messageComplet);
                                                         out.println(messageComplet);
                                                         out.flush();
@@ -186,7 +186,7 @@ public class ConnectionThread implements Runnable {
                                                     }
                                                 }
                                                 else{
-                                                    String messageComplet = "FILE"+ " " + fileName + " " + 0 + " " + 1 + " " + messageToFragment;
+                                                    String messageComplet = "FILE"+ "|" + fileName + "|" + 0 + "|" + 1 + "|" + messageToFragment;
                                                     System.out.println(messageComplet);
                                                     out.println(messageComplet);
                                                     out.flush();
@@ -210,7 +210,7 @@ public class ConnectionThread implements Runnable {
                                             if(serveurObject.redirectConnections.containsKey(fileName+"/"+dataArray[1])){
                                                 //transfer first fragment
                                                 response = serveurObject.redirectConnections.get(fileName+"/"+dataArray[1]).SendReadRequest(fileName,InetAddress.getByName(instigatorInfo[0].substring(1)),Integer.parseInt(instigatorInfo[1]));
-                                                String[] responseSplit = response.split(" ");
+                                                String[] responseSplit = response.split("\\|");
                                                 String Message = "";
                                                 boolean isFragmenting = false;
                                                 if (responseSplit[0].equalsIgnoreCase("FILE")){
@@ -225,7 +225,7 @@ public class ConnectionThread implements Runnable {
                                                     //if more, loop until last fragment
                                                     while (isFragmenting){
                                                         response = serveurObject.redirectConnections.get(fileName+"/"+dataArray[1]).ReceiveFragment();
-                                                        responseSplit = response.split(" ");
+                                                        responseSplit = response.split("\\|");
                                                         if (responseSplit[3].equals("0"))
                                                         {
                                                             out.println(response);
