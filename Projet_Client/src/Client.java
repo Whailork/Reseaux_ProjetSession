@@ -180,6 +180,7 @@ public class Client {
                     fullMessage = new StringBuilder();
                     out.println("MESSAGE RECEIVED");
                     out.flush();
+                    bfr.readLine();
                 }
 
             }

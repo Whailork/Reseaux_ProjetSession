@@ -124,7 +124,7 @@ public class Serveur {
                             connectedServers.add(newServerLink);
                         }
                         else{
-                            if(serverLink.linkSocket.isConnected()){
+                            if(!serverLink.linkSocket.isConnected()){
                                 connectedServers.remove(serverLink);
                                 System.out.println("connexion to server lost : " + peerAddress);
                             }
@@ -230,16 +230,41 @@ public class Serveur {
         for (String file:app.strFiles) {
             String[] strFile = file.split(" ");
             if(fileName.equalsIgnoreCase(strFile[0])){
+                //if it is not local
                 if(strFile.length > 1){
-                    return strFile[1];
+                    try{
+                        LoadConnectedServers();
+                        String[] serverAddress = file.split(" ")[1].split(":");
+                        if(serverAddress.length > 1){
+                            ServerLink serverLink = findConnectedServer(InetAddress.getByName(serverAddress[0].replace("/","")),Integer.parseInt(serverAddress[1]));
+                            if(serverLink != null){
+                                response = serverLink.SendReadRequest(fileName,instigatorAddress,instigatorPort);
+                                if(response.equalsIgnoreCase("READ-REDIRECT")){
+                                        String redirectToken = UUID.randomUUID().toString().replace("-","").substring(0,20);
+                                        redirectConnections.put(fileName + "/" + redirectToken,new ServerLink(new Socket(serverLink.linkSocket.getInetAddress(),serverLink.linkSocket.getPort())));
+                                        response = "READ-REDIRECT " + serverLink.linkSocket.getInetAddress() + ":" + serverLink.linkSocket.getPort() + " " + redirectToken;
+
+                                }
+                                return response;
+                            }
+                            else{
+                                return "no file available with name : " +fileName;
+                            }
+                        }
+
+                    }
+                    catch (Exception e){
+                        System.out.println(e.toString());
+                    }
+
                 }
-                if(instigatorAddress != server.getInetAddress() && instigatorPort != server.getLocalPort()){
-                    return "READ-REDIRECT " + server.getInetAddress() + ":" + server.getLocalPort();
+                if(!(instigatorAddress.equals(app.server.getInetAddress()) && instigatorPort == app.server.getLocalPort())){
+                    return "READ-REDIRECT";
                 }
                 return "local";
             }
         }
-        if(!IsQuerying){
+        /*if(!IsQuerying){
             try{
                 LoadConnectedServers();
             }
@@ -268,7 +293,7 @@ public class Serveur {
 
             }
             IsQuerying = false;
-        }
+        }*/
 
         return response;
 

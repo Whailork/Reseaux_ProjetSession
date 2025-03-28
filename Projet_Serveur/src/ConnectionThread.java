@@ -149,7 +149,7 @@ public class ConnectionThread implements Runnable {
                                             String response = "";
                                             response = serveurObject.FindFile(fileName,InetAddress.getByName(instigatorInfo[0].substring(1)),Integer.parseInt(instigatorInfo[1]));
 
-                                            if (response == "local"){
+                                            if (response.equalsIgnoreCase("local")){
                                                 String messageToFragment = serveurObject.getFileMessageLocal(fileName);;
 
                                                 if (messageToFragment.length() > 500) { // Si contenuMessage est plus grand que 500
@@ -190,11 +190,15 @@ public class ConnectionThread implements Runnable {
                                                     System.out.println(messageComplet);
                                                     out.println(messageComplet);
                                                     out.flush();
+                                                    System.out.println(in.readLine());
                                                 }
                                             }
-                                            System.out.println(response);
-                                            out.println(response);
-                                            out.flush();
+                                            else{
+                                                System.out.println(response);
+                                                out.println(response);
+                                                out.flush();
+                                            }
+
                                     }
                                     else{
                                         //if it was read from read redirect
