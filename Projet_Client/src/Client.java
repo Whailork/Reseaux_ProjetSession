@@ -36,7 +36,7 @@ public class Client {
             input = scanner.nextLine();
 
             // Split l'input dans un tableau de string
-                tableauInput = input.split(" ");
+                tableauInput = input.split("\\|");
 
 
             // Register (tableau taille == 1)
@@ -51,23 +51,26 @@ public class Client {
                 String nom_fichier;
                 // write
                 if(tableauInput.length > 1){
-                    inputToSend = tableauInput[0] + " " + Token + " " + tableauInput[1];
+                    inputToSend = tableauInput[0] + "|" + Token + "|" + tableauInput[1];
 
                 }
                 // LS
                 else{
-                    inputToSend = tableauInput[0] + " " + Token;
+                    inputToSend = tableauInput[0] + "|" + Token;
                 }
 
                 switch (tableauInput[0].toUpperCase()){
                     case "FILE":
-                        StringBuilder contenuMessage = new StringBuilder();
+                        String contenuMessage;
+                        /*
                         if (tableauInput.length > 2) {
                             for (int i = 2; i < tableauInput.length; i++) {
                                 contenuMessage.append(tableauInput[i]);
                                 contenuMessage.append(" ");
                             }
                         }
+                        */
+                        contenuMessage = tableauInput[2];
                         if (contenuMessage.length() > fragmentSize) { // Si contenuMessage est plus grand que 500
                             float nmbFragment = (float) contenuMessage.length() / fragmentSize;
                             if (nmbFragment % 1 > 0) {
@@ -91,7 +94,7 @@ public class Client {
 
                                 // Afficher le message de type FILE (simuler l'envoi)
 
-                                String messageComplet = tableauInput[0] + " " + tableauInput[1] + " " + offset + " " + (isLast ? 1 : 0) + " " + fragment;
+                                String messageComplet = tableauInput[0] + "|" + tableauInput[1] + "|" + offset + "|" + (isLast ? 1 : 0) + "|" + fragment;
                                 System.out.println(messageComplet);
                                 out.println(messageComplet);
                                 out.flush();
@@ -99,7 +102,7 @@ public class Client {
                             }
                         }
                         else{
-                            String messageComplet = tableauInput[0] + " " + tableauInput[1] + " " + 0 + " " + 1 + " " + contenuMessage;
+                            String messageComplet = tableauInput[0] + "|" + tableauInput[1] + "|" + 0 + "|" + 1 + "|" + contenuMessage;
                             System.out.println(messageComplet);
                             out.println(messageComplet);
                             out.flush();
@@ -107,12 +110,12 @@ public class Client {
 
                         break;
                     case "LS":
-                        inputToSend = inputToSend.concat(" " + socket.getInetAddress().toString() + ":" + socket.getPort());
+                        inputToSend = inputToSend.concat("|" + socket.getInetAddress().toString() + ":" + socket.getPort());
                         out.println(inputToSend);
                         out.flush();
                         break;
                     case "READ":
-                        inputToSend = inputToSend.concat(" " + socket.getInetAddress().toString() + ":" + socket.getPort());
+                        inputToSend = inputToSend.concat("|" + socket.getInetAddress().toString() + ":" + socket.getPort());
                         out.println(inputToSend);
                         out.flush();
                         break;
@@ -125,7 +128,7 @@ public class Client {
             else{
                 // Register
                 inputToSend = input;
-                inputToSend += " " + socket.getInetAddress().toString();
+                inputToSend += "|" + socket.getInetAddress().toString();
                 out.println(inputToSend);
                 out.flush();
             }
@@ -133,7 +136,7 @@ public class Client {
 
 
             Response = bfr.readLine();
-            String[] splitResponse = Response.split(" ");
+            String[] splitResponse = Response.split("\\|");
 
             if(Token == null && splitResponse[0].equalsIgnoreCase("REGISTERED")){
                 Token = splitResponse[1];
@@ -145,28 +148,24 @@ public class Client {
                 String[] adress = splitResponse[1].split(":");
                 //RedirectSocket = new Socket(adress[0].replace("/",""),Integer.parseInt(adress[1]));
 
-                String strRedirect = "READ " + RedirectToken + " " + tableauInput[1] + " " + splitResponse[1];
+                String strRedirect = "READ|" + RedirectToken + "|" + tableauInput[1] + "|" + splitResponse[1];
 
                 out.println(strRedirect);
                 out.flush();
+
                 Response = bfr.readLine();
                 System.out.println(Response);
-                String[] responseSplit = Response.split(" ");
+                String[] responseSplit = Response.split("\\|");
+
                 if (responseSplit[0].equalsIgnoreCase("FILE")){
                     if(responseSplit[3].equals("0")){
                         isFragmenting = true;
-                        for (int i = 4; i < responseSplit.length; i++) {
-                            fullMessage.append(responseSplit[i]);
-                            fullMessage.append(" ");
-                        }
+                        fullMessage.append(splitResponse[4]);
                     }
                 }
             }
             if (splitResponse[0].equalsIgnoreCase("FILE")){
-                for (int i = 4; i < splitResponse.length; i++) {
-                    fullMessage.append(splitResponse[i]);
-                    fullMessage.append(" ");
-                }
+                fullMessage.append(splitResponse[4]);
                 if (splitResponse[3].equals("0")) {
                     isFragmenting = true;
 
@@ -177,7 +176,7 @@ public class Client {
                 else{
                     isFragmenting = false;
                     System.out.println(fullMessage);
-                    fullMessage = new StringBuilder();
+                    fullMessage = new StringBuilder("");
                     out.println("MESSAGE RECEIVED");
                     out.flush();
                     bfr.readLine();
