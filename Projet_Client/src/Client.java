@@ -160,7 +160,7 @@ public class Client {
                 if (responseSplit[0].equalsIgnoreCase("FILE")){
                     if(responseSplit[3].equals("0")){
                         isFragmenting = true;
-                        fullMessage.append(splitResponse[4]);
+                        fullMessage.append(responseSplit[4]);
                     }
                 }
             }
