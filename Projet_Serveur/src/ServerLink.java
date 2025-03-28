@@ -16,11 +16,11 @@ public class ServerLink {
             BufferedReader bfr = new BufferedReader(new InputStreamReader(linkSocket.getInputStream()));
 
             PrintWriter out = new PrintWriter(linkSocket.getOutputStream(),true);
-            out.println("REGISTER " + linkSocket.getInetAddress().toString());
+            out.println("REGISTER|" + linkSocket.getInetAddress().toString());
             out.flush();
 
             String response = bfr.readLine();
-            String[] splitResponse = response.split(" ");
+            String[] splitResponse = response.split("\\|");
             linkToken = splitResponse[1];
 
         }
@@ -36,7 +36,7 @@ public class ServerLink {
             BufferedReader in = new BufferedReader(new InputStreamReader(linkSocket.getInputStream()));
 
             PrintWriter out = new PrintWriter(linkSocket.getOutputStream(),true);
-            out.println("LS " + linkToken + " " + instigatorAddress.toString() + ":" + instigatorPort);
+            out.println("LS|" + linkToken + "|" + instigatorAddress.toString() + ":" + instigatorPort);
             out.flush();
 
             response = in.readLine();
@@ -70,7 +70,7 @@ public class ServerLink {
 
             PrintWriter out = new PrintWriter(linkSocket.getOutputStream(),true);
 
-            out.println("READ " + linkToken + " "+ fileName + " " + instigatorAddress.toString() + ":" + instigatorPort);
+            out.println("READ|" + linkToken + "|"+ fileName + "|" + instigatorAddress.toString() + ":" + instigatorPort);
             out.flush();
             response = in.readLine();
 

@@ -242,7 +242,7 @@ public class Serveur {
                                 if(response.equalsIgnoreCase("READ-REDIRECT")){
                                         String redirectToken = UUID.randomUUID().toString().replace("-","").substring(0,20);
                                         redirectConnections.put(fileName + "/" + redirectToken,new ServerLink(new Socket(serverLink.linkSocket.getInetAddress(),serverLink.linkSocket.getPort())));
-                                        response = "READ-REDIRECT " + serverLink.linkSocket.getInetAddress() + ":" + serverLink.linkSocket.getPort() + " " + redirectToken;
+                                        response = "READ-REDIRECT|" + serverLink.linkSocket.getInetAddress() + ":" + serverLink.linkSocket.getPort() + "|" + redirectToken;
 
                                 }
                                 return response;
