@@ -286,8 +286,22 @@ public class ConnectionThread implements Runnable {
                                     }
                                 }
                                 else{
-                                    PrintWriter out = new PrintWriter(client.getOutputStream(),true);
-                                    out.println("NO COMMAND RECOGNIZED");
+                                    //AddNewAvailableFile
+                                    if(dataArray[0].equalsIgnoreCase("AddAvailableFile")){
+                                        if(dataArray.length >3){
+                                            serveurObject.AddNewFileToFileList(dataArray[1],dataArray[2],dataArray[3]);
+                                        }
+                                        else{
+                                            PrintWriter out = new PrintWriter(client.getOutputStream(),true);
+                                            out.println("NO COMMAND RECOGNIZED");
+                                        }
+
+                                    }
+                                    else {
+                                        PrintWriter out = new PrintWriter(client.getOutputStream(),true);
+                                        out.println("NO COMMAND RECOGNIZED");
+                                    }
+
                                 }
 
                             }

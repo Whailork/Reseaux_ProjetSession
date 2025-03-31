@@ -258,5 +258,36 @@ public class Serveur {
 
         return message.toString();
     }
+
+    public void BroadCastNewFileToPeers(String fileName, String serverIp, String serverPort){
+        try{
+            LoadConnectedServers();
+        }
+        catch (Exception e){
+            System.out.println(e);
+        }
+
+        for (ServerLink serverLink:connectedServers) {
+            serverLink.AddNewFileToAvailableFiles(fileName,serverIp,serverPort);
+        }
+    }
+    public void AddNewFileToFileList(String fileName, String serverIp, String serverPort){
+        try{
+            FileWriter fileWriter = new FileWriter(filesList);
+            String newFileContent = "";
+            for (String file:strFiles) {
+                newFileContent = newFileContent.concat(file);
+                if(strFiles.lastIndexOf(file) == strFiles.size()-1){
+                    newFileContent = newFileContent.concat("\n");
+                }
+            }
+            fileWriter.write(newFileContent);
+
+        }
+        catch(Exception e){
+            System.out.println(e);
+        }
+
+    }
 }
 
