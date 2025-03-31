@@ -64,6 +64,9 @@ public class ConnectionThread implements Runnable {
                                 String[] instigatorInfo = dataArray[2].split(":");
                                 String response = "";
                                 response =  serveurObject.findAvailableFiles(InetAddress.getByName(instigatorInfo[0].substring(1)),Integer.parseInt(instigatorInfo[1]));
+                                if (response.isEmpty()){
+                                    response = "NO FILE FOUND ON THE SERVER";
+                                }
                                 System.out.println(response);
                                 out.println(response);
                                 out.flush();
