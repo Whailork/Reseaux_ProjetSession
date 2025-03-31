@@ -200,6 +200,7 @@ public class Client {
         Client client = null;
        do{
            try{
+
                System.out.println("entrez l'adresse ip du serveur suivit du port exemple : 192.168.0.15:3000");
                String serverInfo = sc.nextLine();
                String[] splitInfo = serverInfo.split(":");
