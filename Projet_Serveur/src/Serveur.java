@@ -277,11 +277,11 @@ public class Serveur {
             String newFileContent = "";
             for (String file:strFiles) {
                 newFileContent = newFileContent.concat(file);
-                if(strFiles.lastIndexOf(file) == strFiles.size()-1){
-                    newFileContent = newFileContent.concat("\n");
-                }
+                newFileContent = newFileContent.concat("\n");
             }
+            newFileContent = newFileContent.concat(fileName + " " + serverIp+":"+serverPort);
             fileWriter.write(newFileContent);
+            fileWriter.close();
 
         }
         catch(Exception e){
