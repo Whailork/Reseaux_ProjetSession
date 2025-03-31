@@ -97,7 +97,6 @@ public class Client {
                                 // Afficher le message de type FILE (simuler l'envoi)
 
                                 String messageComplet = tableauInput[0] + "|" + tableauInput[1] + "|" + offset + "|" + (isLast ? 1 : 0) + "|" + fragment;
-                                System.out.println(messageComplet);
                                 out.println(messageComplet);
                                 out.flush();
 
