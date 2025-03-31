@@ -81,4 +81,16 @@ public class ServerLink {
         }
         return response;
     }
+    public void AddNewFileToAvailableFiles(String fileName, String serverIp, String serverPort){
+        try{
+            PrintWriter out = new PrintWriter(linkSocket.getOutputStream(),true);
+
+            out.println("AddAvailableFile|"+fileName+"|"+serverIp+"|"+serverPort);
+            out.flush();
+        }catch(Exception e){
+            System.out.println(e);
+        }
+
+
+    }
 }
