@@ -189,6 +189,7 @@ public class Client {
         }
         catch (SocketException e){
             System.out.println("CONNECTION LOST");
+            AskForServerConection();
             // TO DO : ajouter option de reconnection a un serveur pour l'utilisateur
         }
 
@@ -220,5 +221,39 @@ public class Client {
 
         System.out.println("\r\nConnected to Server: " + client.socket.getInetAddress());
         client.start();
+    }
+
+    void AskForServerConection(){
+        boolean ConexionFound = true;
+        Scanner sc = new Scanner(System.in);
+        Client client = null;
+        do{
+            try{
+
+                System.out.println("entrez l'adresse ip du serveur suivit du port exemple : 192.168.0.15:3000");
+                String serverInfo = sc.nextLine();
+                String[] splitInfo = serverInfo.split(":");
+
+
+
+                client = new Client(InetAddress.getByName(splitInfo[0]), Integer.parseInt(splitInfo[1]));
+                ConexionFound = true;
+            }
+            catch(Exception e){
+                ConexionFound = false;
+                System.out.println("Connexion failed : ");
+            }
+
+        }while (!ConexionFound);
+
+
+        System.out.println("\r\nConnected to Server: " + client.socket.getInetAddress());
+        try{
+            client.start();
+        }
+        catch (Exception e){
+            System.out.println(e);
+        }
+
     }
 }
