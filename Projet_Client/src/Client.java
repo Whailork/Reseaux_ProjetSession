@@ -203,9 +203,6 @@ public class Client {
                 System.out.println("entrez l'adresse ip du serveur suivit du port exemple : 192.168.0.15:3000");
                 String serverInfo = sc.nextLine();
                 String[] splitInfo = serverInfo.split(":");
-
-
-
                 client = new Client(InetAddress.getByName(splitInfo[0]), Integer.parseInt(splitInfo[1]));
                 ConexionFound = true;
             }

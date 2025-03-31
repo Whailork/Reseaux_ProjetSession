@@ -147,6 +147,7 @@ public class ConnectionThread implements Runnable {
                                             catch(Exception e){
                                                 System.out.println(e.toString());
                                             }
+                                            serveurObject.BroadCastNewFileToPeers(nomFicher,server.getInetAddress().toString().replace("/",""),server.getLocalPort() + "");
                                             out.println("FILE SAVED");
                                             out.flush();
                                         }
