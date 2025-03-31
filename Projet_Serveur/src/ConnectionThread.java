@@ -105,6 +105,7 @@ public class ConnectionThread implements Runnable {
                             else if(dataArray[0].equalsIgnoreCase("FILE")){
                                 PrintWriter out = new PrintWriter(client.getOutputStream(),true);
                                 boolean fileNameAvailable = true;
+
                                 for (String file : serveurObject.strFiles){
                                     if (Objects.equals(file, dataArray[1])){
                                         fileNameAvailable = false;
