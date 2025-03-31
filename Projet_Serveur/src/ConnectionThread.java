@@ -1,9 +1,12 @@
+import com.sun.nio.sctp.PeerAddressChangeNotification;
+
 import java.io.*;
 import java.net.InetAddress;
 import java.net.ServerSocket;
 import java.net.Socket;
 import java.util.ArrayList;
 import java.util.IllegalFormatCodePointException;
+import java.util.Objects;
 import java.util.UUID;
 
 public class ConnectionThread implements Runnable {
@@ -81,7 +84,14 @@ public class ConnectionThread implements Runnable {
                             //Write
                             if(dataArray[0].equalsIgnoreCase("WRITE")){
                                 PrintWriter out = new PrintWriter(client.getOutputStream(),true);
-                                if(dataArray[1].equalsIgnoreCase(clientToken) /* && verifier si le file existe dans la liste du server*/){
+                                boolean fileNameAvailable = true;
+                                for (String file : serveurObject.strFiles){
+                                    if (Objects.equals(file, dataArray[2])){
+                                        fileNameAvailable = false;
+                                        break;
+                                    }
+                                }
+                                    if(dataArray[1].equalsIgnoreCase(clientToken) && fileNameAvailable){
                                     writeAuthorized = true;
                                     out.println("WRITE BEGIN");
                                     out.flush();
@@ -94,8 +104,15 @@ public class ConnectionThread implements Runnable {
                             }
                             else if(dataArray[0].equalsIgnoreCase("FILE")){
                                 PrintWriter out = new PrintWriter(client.getOutputStream(),true);
+                                boolean fileNameAvailable = true;
 
-                                if(writeAuthorized) {
+                                for (String file : serveurObject.strFiles){
+                                    if (Objects.equals(file, dataArray[1])){
+                                        fileNameAvailable = false;
+                                        break;
+                                    }
+                                }
+                                if(writeAuthorized && fileNameAvailable) {
                                     // Décoder le message
                                     nomFicher = dataArray[1];
                                     offset = Integer.parseInt(dataArray[2]);
