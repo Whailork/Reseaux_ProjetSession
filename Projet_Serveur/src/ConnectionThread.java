@@ -9,7 +9,7 @@ import java.util.UUID;
 public class ConnectionThread implements Runnable {
     ServerSocket server;
     Serveur serveurObject;
-    String clientToken;
+    String clientToken = "";
     String clientAdress;
     Socket client;
     public ConnectionThread(Serveur serveurObject,ServerSocket server) {
@@ -39,7 +39,7 @@ public class ConnectionThread implements Runnable {
                 //Register
                 String[] dataArray = data.split("\\|");
                 if(dataArray.length > 1){
-                    if(dataArray[0].equalsIgnoreCase("REGISTER")){
+                    if(dataArray[0].equalsIgnoreCase("REGISTER") && clientToken.isEmpty()){
                         clientToken = UUID.randomUUID().toString().replace("-","").substring(0,20);
                         clientAdress = dataArray[1];
                         System.out.println(clientAdress);
@@ -48,6 +48,12 @@ public class ConnectionThread implements Runnable {
                         out.flush();
                         System.out.println(clientToken);
 
+                    }
+                    else if(dataArray[0].equalsIgnoreCase("REGISTER") && !clientToken.isEmpty()){
+                        PrintWriter out = new PrintWriter(client.getOutputStream(),true);
+                        out.println("AlREADY REGISTERED|" + clientToken);
+                        out.flush();
+                        System.out.println(clientToken);
                     }
                     else{
                         //Ls
