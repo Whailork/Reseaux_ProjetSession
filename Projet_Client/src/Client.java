@@ -155,21 +155,21 @@ public class Client {
                 out.println(strRedirect);
                 out.flush();
 
-                    Response = bfr.readLine();
-                    System.out.println(Response);
-                    String[] responseSplit = Response.split("\\|");
+                Response = bfr.readLine();
+                System.out.println(Response);
+                String[] responseSplit = Response.split("\\|");
 
-                    if (responseSplit[0].equalsIgnoreCase("FILE")) {
-                        if (responseSplit[3].equals("0")) {
-                            isFragmenting = true;
-                            fullMessage.append(splitResponse[4]);
-                        }
+                if (responseSplit[0].equalsIgnoreCase("FILE")){
+                    if(responseSplit[3].equals("0")){
+                        isFragmenting = true;
+                        fullMessage.append(responseSplit[4]);
                     }
                 }
-                if (splitResponse[0].equalsIgnoreCase("FILE")) {
-                    fullMessage.append(splitResponse[4]);
-                    if (splitResponse[3].equals("0")) {
-                        isFragmenting = true;
+            }
+            if (splitResponse[0].equalsIgnoreCase("FILE")){
+                fullMessage.append(splitResponse[4]);
+                if (splitResponse[3].equals("0")) {
+                    isFragmenting = true;
 
                         out.println("FRAGMENT RECEIVED");
                         out.flush();
@@ -195,9 +195,27 @@ public class Client {
     }
 
     public static void main(String[] args) throws Exception {
-        Client client = new Client(
-                InetAddress.getByName(args[0]),
-                Integer.parseInt(args[1]));
+        boolean ConexionFound = true;
+        Scanner sc = new Scanner(System.in);
+        Client client = null;
+       do{
+           try{
+               System.out.println("entrez l'adresse ip du serveur suivit du port exemple : 192.168.0.15:3000");
+               String serverInfo = sc.nextLine();
+               String[] splitInfo = serverInfo.split(":");
+
+
+
+               client = new Client(InetAddress.getByName(splitInfo[0]), Integer.parseInt(splitInfo[1]));
+               ConexionFound = true;
+           }
+           catch(Exception e){
+               ConexionFound = false;
+               System.out.println("Connexion failed : ");
+           }
+
+       }while (!ConexionFound);
+
 
         System.out.println("\r\nConnected to Server: " + client.socket.getInetAddress());
         client.start();
