@@ -4,6 +4,7 @@ import java.io.InputStreamReader;
 import java.io.PrintWriter;
 import java.net.InetAddress;
 import java.net.Socket;
+import java.net.SocketException;
 import java.util.Objects;
 import java.util.Scanner;
 
@@ -21,12 +22,13 @@ public class Client {
 
     //to register Register 192.168.0.15
     private void start() throws IOException {
-        String inputToSend;
-        String input;
-        int fragmentSize = 500;
-        StringBuilder fullMessage = new StringBuilder();
-        boolean isFragmenting = false;
-        String[] tableauInput = new String[0];
+        try {
+            String inputToSend;
+            String input;
+            int fragmentSize = 500;
+            StringBuilder fullMessage = new StringBuilder();
+            boolean isFragmenting = false;
+            String[] tableauInput = new String[0];
 
         PrintWriter out = new PrintWriter(this.socket.getOutputStream(),true);
         BufferedReader bfr = new BufferedReader(new InputStreamReader(this.socket.getInputStream()));
@@ -169,21 +171,25 @@ public class Client {
                 if (splitResponse[3].equals("0")) {
                     isFragmenting = true;
 
-                    out.println("FRAGMENT RECEIVED");
-                    out.flush();
+                        out.println("FRAGMENT RECEIVED");
+                        out.flush();
 
-                }
-                else{
-                    isFragmenting = false;
-                    System.out.println(fullMessage);
-                    fullMessage = new StringBuilder("");
-                    out.println("MESSAGE RECEIVED");
-                    out.flush();
-                    bfr.readLine();
+                    } else {
+                        isFragmenting = false;
+                        System.out.println(fullMessage);
+                        fullMessage = new StringBuilder("");
+                        out.println("MESSAGE RECEIVED");
+                        out.flush();
+                        bfr.readLine();
+                    }
+
                 }
 
             }
-
+        }
+        catch (SocketException e){
+            System.out.println("CONNECTION LOST");
+            // TO DO : ajouter option de reconnection a un serveur pour l'utilisateur
         }
 
     }
@@ -194,6 +200,7 @@ public class Client {
         Client client = null;
        do{
            try{
+
                System.out.println("entrez l'adresse ip du serveur suivit du port exemple : 192.168.0.15:3000");
                String serverInfo = sc.nextLine();
                String[] splitInfo = serverInfo.split(":");
