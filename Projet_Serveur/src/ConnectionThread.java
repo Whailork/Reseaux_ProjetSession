@@ -114,6 +114,7 @@ public class ConnectionThread implements Runnable {
                                 }
                                 if(writeAuthorized && fileNameAvailable) {
                                     // Décoder le message
+                                    //TODO:enlever les chraracteres de padding
                                     nomFicher = dataArray[1];
                                     offset = Integer.parseInt(dataArray[2]);
                                     isLast = Integer.parseInt(dataArray[3]);
@@ -185,7 +186,7 @@ public class ConnectionThread implements Runnable {
 
                                             if (response.equalsIgnoreCase("local")){
                                                 String messageToFragment = serveurObject.getFileMessageLocal(fileName);;
-
+                                                messageToFragment = messageToFragment.replace("~","~~");
                                                 if (messageToFragment.length() > 500) { // Si contenuMessage est plus grand que 500
 
                                                     float nmbFragment = (float) messageToFragment.length() / 500;
@@ -199,16 +200,21 @@ public class ConnectionThread implements Runnable {
                                                         int offset2 = (i * 500);
                                                         boolean isLast2 = false;
 
-                                                        if (i == nmbFragment - 1) {
-                                                            isLast2 = true;
-                                                        }
 
                                                         // Découper le fichier en morceaux de 500 caractères
                                                         int start = i * 500;
                                                         int end = Math.min(start + 500, messageToFragment.length());
                                                         String fragment = messageToFragment.substring(start, end);
 
+                                                        if (i == nmbFragment - 1) {
+                                                            //rajouter des caractères tampons
+                                                            isLast2 = true;
+                                                            int nbPadding = 500-fragment.length();
+                                                            for(int x = 0; x < nbPadding;x++){
+                                                                fragment = fragment.concat("~");
+                                                            }
 
+                                                        }
                                                         // Afficher le message de type FILE (simuler l'envoi)
 
                                                         String messageComplet = "FILE" + "|" + fileName + "|" + offset2 + "|" + (isLast2 ? 1 : 0) + "|" + fragment;
@@ -321,8 +327,6 @@ public class ConnectionThread implements Runnable {
                     out.println("NO CONNECTION TOKEN PROVIDED");
                     out.flush();
                 }
-
-
                 System.out.println("\r\nMessage from " + clientAdress + ": " + data);
             }
 
