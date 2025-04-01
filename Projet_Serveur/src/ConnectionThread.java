@@ -135,7 +135,13 @@ public class ConnectionThread implements Runnable {
                                                 BufferedReader bfr2 = new BufferedReader(fl2);
                                                 String line2 = "";
                                                 while ((line2 = bfr2.readLine()) != null){
-                                                    fileContent = fileContent.concat("\n"+line2);
+                                                    if(fileContent.equals("")){
+                                                        fileContent = fileContent.concat(line2);
+                                                    }
+                                                    else{
+                                                        fileContent = fileContent.concat("\n"+line2);
+                                                    }
+
                                                 }
                                                 fl2.close();
                                                 fileContent = fileContent.concat("\n" +nomFicher);
@@ -161,7 +167,8 @@ public class ConnectionThread implements Runnable {
 
                                 }
                                 else  {
-                                    out.println("FILE UNAUTHORIZED");
+                                    out.println("FILE UNAUTHORIZED OR FILE ALREADY EXISTS");
+                                    writeAuthorized = false;
                                     out.flush();
                                 }
                             }
