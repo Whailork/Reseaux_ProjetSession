@@ -63,7 +63,7 @@ public class ConnectionThread implements Runnable {
                         if(dataArray[0].equalsIgnoreCase("LS")){
                             PrintWriter out = new PrintWriter(client.getOutputStream(),true);
 
-                            if(dataArray[1].equalsIgnoreCase(clientToken) && clientAdress.equalsIgnoreCase(client.getInetAddress().toString())){
+                            if(dataArray[1].equalsIgnoreCase(clientToken)){
                                 String[] instigatorInfo = dataArray[2].split(":");
                                 String response = "";
                                 response =  serveurObject.findAvailableFiles(InetAddress.getByName(instigatorInfo[0].substring(1)),Integer.parseInt(instigatorInfo[1]));
