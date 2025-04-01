@@ -113,34 +113,31 @@ public class Serveur {
         for (String peerAddress: strPeers) {
             String[] addressInfo = peerAddress.split(" ");
             if(addressInfo.length > 1){
-                if(InetAddress.getByName(addressInfo[0]).isReachable(100)){
-                    InetAddress address = InetAddress.getByName(addressInfo[0]);
-                    try{
-                        ServerLink serverLink = findConnectedServer(address,Integer.parseInt(addressInfo[1]));
-                        if(serverLink == null){
 
-                            Socket socket = new Socket(address, Integer.parseInt(addressInfo[1]));
-                            ServerLink newServerLink = new ServerLink(socket);
-                            connectedServers.add(newServerLink);
+                InetAddress address = InetAddress.getByName(addressInfo[0]);
+                try{
+                    ServerLink serverLink = findConnectedServer(address,Integer.parseInt(addressInfo[1]));
+                    if(serverLink == null){
+
+                        Socket socket = new Socket(address, Integer.parseInt(addressInfo[1]));
+                        ServerLink newServerLink = new ServerLink(socket);
+                        connectedServers.add(newServerLink);
+                    }
+                    else{
+                        if(!serverLink.linkSocket.isConnected()){
+                            connectedServers.remove(serverLink);
+                            System.out.println("connexion to server lost : " + peerAddress);
                         }
                         else{
-                            if(!serverLink.linkSocket.isConnected()){
-                                connectedServers.remove(serverLink);
-                                System.out.println("connexion to server lost : " + peerAddress);
-                            }
-                            else{
-                                System.out.println("server already connected");
-                            }
-
+                            System.out.println("server already connected");
                         }
-                    }
-                    catch(Exception e){
-                        System.out.println("cannot connect to server : " + peerAddress);
+
                     }
                 }
-                else {
+                catch(Exception e){
                     System.out.println("cannot connect to server : " + peerAddress);
                 }
+
             }
         }
     }
@@ -282,7 +279,7 @@ public class Serveur {
             newFileContent = newFileContent.concat(fileName + " " + serverIp+":"+serverPort);
             fileWriter.write(newFileContent);
             fileWriter.close();
-
+            strFiles.add(fileName + " " + serverIp+":"+serverPort);
         }
         catch(Exception e){
             System.out.println(e);
