@@ -74,6 +74,7 @@ public class Client {
                         */
                                 contenuMessage = tableauInput[2];
                                 contenuMessage = contenuMessage.replace("~","~~");
+                                //TODO: fill fragment with ~
                                 if (contenuMessage.length() > fragmentSize) { // Si contenuMessage est plus grand que 500
                                     float nmbFragment = (float) contenuMessage.length() / fragmentSize;
                                     if (nmbFragment % 1 > 0) {
@@ -113,6 +114,10 @@ public class Client {
                                 }
                                 else{
                                     //only one fragment
+                                    int nbPadding = 500-contenuMessage.length();
+                                    for(int x = 0; x < nbPadding;x++){
+                                        contenuMessage = contenuMessage.concat("~");
+                                    }
                                     String messageComplet = tableauInput[0] + "|" + tableauInput[1] + "|" + 0 + "|" + 1 + "|" + contenuMessage;
                                     System.out.println(messageComplet);
                                     out.println(messageComplet);
@@ -168,15 +173,41 @@ public class Client {
                     System.out.println(Response);
                     String[] responseSplit = Response.split("\\|");
 
+                    String contenuFragment = responseSplit[4];
+                    contenuFragment = contenuFragment.replace("~~","~");
+                    int baseFragmentLength = contenuFragment.length()-1;
+                    for (int i = baseFragmentLength; i > 0; i--){
+                        if(contenuFragment.charAt(i) == '~'){
+                            contenuFragment = contenuFragment.substring(0, contenuFragment.length() - 1);
+                        }
+                        else{
+                            break;
+                        }
+                    }
+
                     if (responseSplit[0].equalsIgnoreCase("FILE")){
                         if(responseSplit[3].equals("0")){
                             isFragmenting = true;
-                            fullMessage.append(responseSplit[4]);
+                            fullMessage.append(contenuFragment);
                         }
                     }
                 }
                 if (splitResponse[0].equalsIgnoreCase("FILE")){
-                    fullMessage.append(splitResponse[4]);
+
+                    String contenuFragment = splitResponse[4];
+                    contenuFragment = contenuFragment.replace("~~","~");
+                    int baseFragmentLength = contenuFragment.length()-1;
+                    for (int i = baseFragmentLength; i > 0; i--){
+                        if(contenuFragment.charAt(i) == '~'){
+                            contenuFragment = contenuFragment.substring(0, contenuFragment.length() - 1);
+                        }
+                        else{
+                            break;
+                        }
+                    }
+
+
+                    fullMessage.append(contenuFragment);
                     if (splitResponse[3].equals("0")) {
                         isFragmenting = true;
 

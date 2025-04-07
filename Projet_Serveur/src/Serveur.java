@@ -248,7 +248,7 @@ public class Serveur {
                 BufferedReader bfr = new BufferedReader(new FileReader(newFile));
                 String line;
                 while ((line = bfr.readLine()) != null) {
-                    message.append(line).append("\n");
+                    message.append(line);
                 }
             }
         }

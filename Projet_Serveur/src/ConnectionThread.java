@@ -119,6 +119,16 @@ public class ConnectionThread implements Runnable {
                                     offset = Integer.parseInt(dataArray[2]);
                                     isLast = Integer.parseInt(dataArray[3]);
                                     contenuFragment = dataArray[4];
+                                    contenuFragment = contenuFragment.replace("~~","~");
+                                    int baseFragmentLength = contenuFragment.length()-1;
+                                    for (int i = baseFragmentLength; i > 0; i--){
+                                        if(contenuFragment.charAt(i) == '~'){
+                                            contenuFragment = contenuFragment.substring(0, contenuFragment.length() - 1);
+                                        }
+                                        else{
+                                            break;
+                                        }
+                                    }
                                     contenuFichier = "";
                                     contenuFichier = contenuFichier.concat(contenuFragment);
                                     if(isLast == 1){
@@ -226,6 +236,10 @@ public class ConnectionThread implements Runnable {
                                                     }
                                                 }
                                                 else{
+                                                    int nbPadding = 500-messageToFragment.length();
+                                                    for(int x = 0; x < nbPadding;x++){
+                                                        messageToFragment = messageToFragment.concat("~");
+                                                    }
                                                     String messageComplet = "FILE"+ "|" + fileName + "|" + 0 + "|" + 1 + "|" + messageToFragment;
                                                     System.out.println(messageComplet);
                                                     out.println(messageComplet);
