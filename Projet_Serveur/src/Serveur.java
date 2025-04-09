@@ -19,6 +19,7 @@ public class Serveur {
     public ArrayList<ServerLink> connectedServers;
     public HashMap<String,ServerLink> redirectConnections;
     public String FilesPath;
+    //constructeurs du serveur avec et sans la précision du port
     public Serveur(String ipAdresse) throws Exception{
         if(ipAdresse != null && !ipAdresse.isEmpty()){
 
@@ -38,8 +39,8 @@ public class Serveur {
         }
     }
 
+    // pour lancer un nouveau thread de connexion client
     private void listen(Serveur app) throws Exception{
-        //new Thread(new ServerConnectionThread(app,server)).start();
         new Thread(new ConnectionThread(app,server)).start();
     }
 
@@ -53,6 +54,7 @@ public class Serveur {
 
     public static void main(String[] args) throws Exception {
 
+        //création du serveur
         if(args.length > 0){
             app = new Serveur(InetAddress.getLocalHost().getHostAddress(),Integer.parseInt(args[0]));
         }
@@ -60,19 +62,23 @@ public class Serveur {
             app = new Serveur(InetAddress.getLocalHost().getHostAddress());
         }
 
+        //si les arguments sont valides
         if(args != null){
             if(args.length > 3){
-
+                // le troisième argument est le chemin du fichier dans lequel le serveur va enregistrer les nouveaux fichiers
                 app.FilesPath = args[3];
+                // le premier argument est le chemin vers la peer list
                 app.peersList =  new File(args[1]);
+                // le deuxième argument est le chemin vers la file list
                 app.filesList = new File(args[2]);
+                //on initialise les structures de données qui sont nécéssaires à la communication avec les peers
                 app.connectedServers = new ArrayList<>();
                 app.redirectConnections = new HashMap<>();
                 System.out.println("fichiers detectes");
                 app.strPeers = new ArrayList<>();
                 app.strFiles = new ArrayList<>();
                 app.connectedServers = new ArrayList<>();
-                //load peers list for future use
+                //on load les peers du fichier peer pour les utiliser plus tard
                 FileReader fl = new FileReader(app.peersList);
                 BufferedReader bfr = new BufferedReader(fl);
                 String line = "";
@@ -80,7 +86,7 @@ public class Serveur {
                     app.strPeers.add(line);
                 }
 
-                //load files list for future use
+                //on load les peers du fichier file pour les utiliser plus tard
                 FileReader fl2 = new FileReader(app.filesList);
                 BufferedReader bfr2 = new BufferedReader(fl2);
                 String line2 = "";
@@ -89,7 +95,7 @@ public class Serveur {
                 }
 
 
-                // close the file
+                // on ferme les fichiers et les fileReaders
                 fl.close();
                 fl2.close();
                 bfr.close();
@@ -103,37 +109,38 @@ public class Serveur {
         System.out.println("\r\nRunning Server: " + app.getSocketAddress().getHostAddress() + " " + app.getPort());
 
         app.listen(app);
-
-        //System.out.println(app.findAvailableFiles(app.server.getInetAddress(),app.server.getLocalPort());
-
     }
 
+    //fonction qui permet de charger et véfifier la connexion avec les peers
     public void LoadConnectedServers() throws IOException {
-
         for (String peerAddress: strPeers) {
             String[] addressInfo = peerAddress.split(" ");
+            //si le format d'adresse est valide
             if(addressInfo.length > 1){
-
                 InetAddress address = InetAddress.getByName(addressInfo[0]);
                 try{
+                    //s'il est possible de se connecter au serveur
                     ServerLink serverLink = findConnectedServer(address,Integer.parseInt(addressInfo[1]));
                     if(serverLink == null){
-
+                        // si une connexion n'avait pas déjà été établie avec le serveur, on en ouvre une nouvelle
                         Socket socket = new Socket(address, Integer.parseInt(addressInfo[1]));
                         ServerLink newServerLink = new ServerLink(socket);
                         connectedServers.add(newServerLink);
                     }
                     else{
+                        //on vérifie si une connexion précédemment établie est encore valide
                         if(!serverLink.linkSocket.isConnected()){
                             connectedServers.remove(serverLink);
                             System.out.println("connexion to server lost : " + peerAddress);
                         }
+                        //sinon nous sommes déjà connectés au serveur
                         else{
                             System.out.println("server already connected");
                         }
 
                     }
                 }
+                //sinon il est impossible de se connecter à ce peer
                 catch(Exception e){
                     System.out.println("cannot connect to server : " + peerAddress);
                 }
@@ -142,6 +149,7 @@ public class Serveur {
         }
     }
 
+    // pour trouver un peer en particulier
     public ServerLink findConnectedServer(InetAddress address, int port){
         for (ServerLink serverLink:connectedServers) {
 
@@ -152,28 +160,29 @@ public class Serveur {
         return null;
     }
 
+    //pour trouver tous les fichiers disponibles depuis ce serveur (LS)
     public String findAvailableFiles(InetAddress instigatorAddress, int instigatorPort){
         String availableFiles = "";
-        //load local files
+        //on charge les fichiers locaux
         for (String file:app.strFiles) {
-            //if local file
+            //si le fichier est local, on l'ajoute directement au LS
             if(!(file.split(" ").length > 1)){
                 availableFiles = availableFiles.concat(file + "|");
             }
-            //check servers connection
+            //On regarde ensuite l'état de connexion des serveurs
             else{
                 try{
                     LoadConnectedServers();
                     String[] serverAddress = file.split(" ")[1].split(":");
                     if(serverAddress.length > 1){
                         ServerLink serverLink = findConnectedServer(InetAddress.getByName(serverAddress[0].replace("/","")),Integer.parseInt(serverAddress[1]));
+                        //si le serveur est connecté, on ajoute le nom du fichier à la liste
                         if(serverLink != null){
                             availableFiles = availableFiles.concat(file.split(" ")[0] + "|");
                         }
                     }
                     else{
-                        //nomenclature pas conforme
-                        //TODO: avertir le user que le fichier files est invalide
+                        System.out.println("Nomenclature du fichier file non conforme");
                     }
 
                 }
@@ -186,18 +195,22 @@ public class Serveur {
 
         return availableFiles;
     }
+    // pour trouver un fichier précis (quand le client a envoyé un read par exemple)
     public String FindFile(String fileName,InetAddress instigatorAddress, int instigatorPort){
         String response = "";
         for (String file:app.strFiles) {
             String[] strFile = file.split(" ");
             if(fileName.equalsIgnoreCase(strFile[0])){
-                //if it is not local
+                //si le fichier n'est pas local
                 if(strFile.length > 1){
                     try{
+                        // on vérifie l'état de connexion des serveurs
                         LoadConnectedServers();
                         String[] serverAddress = file.split(" ")[1].split(":");
                         if(serverAddress.length > 1){
+                            //on regarde si le serveur existe et la connexion est établie
                             ServerLink serverLink = findConnectedServer(InetAddress.getByName(serverAddress[0].replace("/","")),Integer.parseInt(serverAddress[1]));
+                            //si le serveur est connecté, le serveur établie une connexion spéciale avec le peer, pour permettre le read redirect
                             if(serverLink != null){
                                 response = serverLink.SendReadRequest(fileName,instigatorAddress,instigatorPort);
                                 if(response.equalsIgnoreCase("READ-REDIRECT")){
@@ -208,6 +221,7 @@ public class Serveur {
                                 }
                                 return response;
                             }
+                            //s'il n'est pas connecté, le fichier est non disponible
                             else{
                                 return "no file available with name : " +fileName;
                             }
@@ -222,6 +236,7 @@ public class Serveur {
                 if(!(instigatorAddress.equals(app.server.getInetAddress()) && instigatorPort == app.server.getLocalPort())){
                     return "READ-REDIRECT";
                 }
+                //si le fichier est local, la fonction retourne "local"
                 return "local";
             }
         }
@@ -229,16 +244,8 @@ public class Serveur {
 
 
     }
-    public ArrayList<String> getLocalFiles(Serveur server){
-        ArrayList<String> localFiles = new ArrayList<>();
-        for (String file:server.strFiles) {
-            if(!(file.split(" ").length > 1)){
-                localFiles.add(file);
-            }
-        }
-        return localFiles;
-    }
 
+    //pour lire le contenu d'un fichier sur la machine du serveur
     public String getFileMessageLocal(String fileName) throws IOException {
         StringBuilder message = new StringBuilder();
         strFiles = app.strFiles;
@@ -256,6 +263,8 @@ public class Serveur {
         return message.toString();
     }
 
+
+    // pour dire au peers de rajouter un fichier dans leur fichier file lors de l'ajout d'un nouveau fichier au serveur
     public void BroadCastNewFileToPeers(String fileName, String serverIp, String serverPort){
         try{
             LoadConnectedServers();
@@ -268,14 +277,17 @@ public class Serveur {
             serverLink.AddNewFileToAvailableFiles(fileName,serverIp,serverPort);
         }
     }
+    //pour rajouter un nom de fichier au fichier file du serveur
     public void AddNewFileToFileList(String fileName, String serverIp, String serverPort){
         try{
             FileWriter fileWriter = new FileWriter(filesList);
             String newFileContent = "";
+            //on load les fichiers déjà existant
             for (String file:strFiles) {
                 newFileContent = newFileContent.concat(file);
                 newFileContent = newFileContent.concat("\n");
             }
+            // on y rajoute le nom du nouveau fichier
             newFileContent = newFileContent.concat(fileName + " " + serverIp+":"+serverPort);
             fileWriter.write(newFileContent);
             fileWriter.close();
