@@ -22,8 +22,10 @@ public class ConnectionThread implements Runnable {
 
     public void run() {
         try {
+            //on attends une demande de connexion
             String data = null;
             client = server.accept();
+            //lors de la connexion, on lance un nouveau thread pour permettre au prochain client de se connecter au serveur
             new Thread(new ConnectionThread(serveurObject,server)).start();
             clientAdress = "";
             boolean writeAuthorized = false;
@@ -35,23 +37,27 @@ public class ConnectionThread implements Runnable {
             String contenuFichier;
             String contenuFragment;
 
-
+            // on attends une requête de la part du client
             BufferedReader in = new BufferedReader(new InputStreamReader(client.getInputStream()));
             while ((data = in.readLine()) != null) {
                 //traitement des types  de messages
-                //Register
+                //on split les données reçus
                 String[] dataArray = data.split("\\|");
+                //Register
                 if(dataArray.length > 1){
                     if(dataArray[0].equalsIgnoreCase("REGISTER") && clientToken.isEmpty()){
+                        //on génère un token qu'on stocke sur le thread et on enregistre l'adresse ip du client
                         clientToken = UUID.randomUUID().toString().replace("-","").substring(0,20);
                         clientAdress = dataArray[1];
                         System.out.println(clientAdress);
+                        //on renvoie ensuite le token généré au client
                         PrintWriter out = new PrintWriter(client.getOutputStream(),true);
                         out.println("REGISTERED|" + clientToken);
                         out.flush();
                         System.out.println(clientToken);
 
                     }
+                    // si le client a envoyé un message register alors qu'il est déjà connecté
                     else if(dataArray[0].equalsIgnoreCase("REGISTER") && !clientToken.isEmpty()){
                         PrintWriter out = new PrintWriter(client.getOutputStream(),true);
                         out.println("AlREADY REGISTERED|" + clientToken);
@@ -62,14 +68,16 @@ public class ConnectionThread implements Runnable {
                         //Ls
                         if(dataArray[0].equalsIgnoreCase("LS")){
                             PrintWriter out = new PrintWriter(client.getOutputStream(),true);
-
+                            //on vérifie le token de connexion
                             if(dataArray[1].equalsIgnoreCase(clientToken)){
                                 String[] instigatorInfo = dataArray[2].split(":");
                                 String response = "";
+                                // on get tous les fichiers disponibles sur le serveur
                                 response =  serveurObject.findAvailableFiles(InetAddress.getByName(instigatorInfo[0].substring(1)),Integer.parseInt(instigatorInfo[1]));
                                 if (response.isEmpty()){
                                     response = "NO FILE FOUND ON THE SERVER";
                                 }
+                                //on envoie la réponse au client
                                 System.out.println(response);
                                 out.println(response);
                                 out.flush();
@@ -85,12 +93,14 @@ public class ConnectionThread implements Runnable {
                             if(dataArray[0].equalsIgnoreCase("WRITE")){
                                 PrintWriter out = new PrintWriter(client.getOutputStream(),true);
                                 boolean fileNameAvailable = true;
+                                // on vérifie si le nom de fichier est déjà utilisé ailleurs
                                 for (String file : serveurObject.strFiles){
                                     if (Objects.equals(file, dataArray[2])){
                                         fileNameAvailable = false;
                                         break;
                                     }
                                 }
+                                    // on vérifie le token de connexion et que le nom de fichier est disponible
                                     if(dataArray[1].equalsIgnoreCase(clientToken) && fileNameAvailable){
                                     writeAuthorized = true;
                                     out.println("WRITE BEGIN");
@@ -102,23 +112,25 @@ public class ConnectionThread implements Runnable {
                                     out.flush();
                                 }
                             }
+                            //File
                             else if(dataArray[0].equalsIgnoreCase("FILE")){
                                 PrintWriter out = new PrintWriter(client.getOutputStream(),true);
                                 boolean fileNameAvailable = true;
-
+                                // on revérifie si le nom de fichier est disponible au cas ou l'utilisateur aurait envoyé un autre nom de fichier après le write begin
                                 for (String file : serveurObject.strFiles){
                                     if (Objects.equals(file, dataArray[1])){
                                         fileNameAvailable = false;
                                         break;
                                     }
                                 }
+                                //si le client à envoyé un message de type write précédement et que l'écriture a été approuvée par le serveur
                                 if(writeAuthorized && fileNameAvailable) {
-                                    // Décoder le message
-                                    //TODO:enlever les chraracteres de padding
+                                    //on Décode le message
                                     nomFicher = dataArray[1];
                                     offset = Integer.parseInt(dataArray[2]);
                                     isLast = Integer.parseInt(dataArray[3]);
                                     contenuFragment = dataArray[4];
+                                    // on décrypte le message en enlevant les doublons de caractères tampons et le padding à la fin du message
                                     contenuFragment = contenuFragment.replace("~~","~");
                                     int baseFragmentLength = contenuFragment.length()-1;
                                     for (int i = baseFragmentLength; i > 0; i--){
@@ -131,15 +143,18 @@ public class ConnectionThread implements Runnable {
                                     }
                                     contenuFichier = "";
                                     contenuFichier = contenuFichier.concat(contenuFragment);
+                                    //si le fragment est le dernier
                                     if(isLast == 1){
                                         writeAuthorized = false;
                                         File newFile = new File(serveurObject.FilesPath.replaceAll("\"","")+"\\"+nomFicher+".txt");
                                         if(newFile.createNewFile()){
+                                            //on ajoute le nom du fichier à la liste de fichier du serveur
                                             serveurObject.strFiles.add(nomFicher);
                                             FileWriter fileWriter1 = new FileWriter(newFile);
                                             fileWriter1.write(contenuFichier);
                                             fileWriter1.close();
                                             try{
+                                                //et on écrit le nom dans le fichier file
                                                 String fileContent = "";
                                                 //load files list for future use
                                                 FileReader fl2 = new FileReader(serveurObject.filesList);
@@ -164,11 +179,13 @@ public class ConnectionThread implements Runnable {
                                             catch(Exception e){
                                                 System.out.println(e.toString());
                                             }
+                                            // on avertit les peers qu'il y a un nouveau fichier disponible sur ce serveur
                                             serveurObject.BroadCastNewFileToPeers(nomFicher,server.getInetAddress().toString().replace("/",""),server.getLocalPort() + "");
                                             out.println("FILE SAVED");
                                             out.flush();
                                         }
                                     }
+                                    //s'il reste encore d'autres fragments
                                     else{
                                         out.println("FRAGMENT RECEIVED");
                                         out.flush();
@@ -187,18 +204,21 @@ public class ConnectionThread implements Runnable {
                                 //Read
                                 if(dataArray[0].equalsIgnoreCase("READ")){
                                     PrintWriter out = new PrintWriter(client.getOutputStream(),true);
+                                    //on vérifie le token du client
                                     if(dataArray[1].equalsIgnoreCase(clientToken)){
 
                                             String fileName = dataArray[2];
                                             String[] instigatorInfo = dataArray[3].split(":");
                                             String response = "";
+                                            // on cherche la provenance du fichier la réponse sera read-redirect,local ou file unavailable
                                             response = serveurObject.FindFile(fileName,InetAddress.getByName(instigatorInfo[0].substring(1)),Integer.parseInt(instigatorInfo[1]));
-
+                                            //si le fichier est local, on début la fragmentation pour procéder à l'envoi
                                             if (response.equalsIgnoreCase("local")){
                                                 String messageToFragment = serveurObject.getFileMessageLocal(fileName);;
                                                 messageToFragment = messageToFragment.replace("~","~~");
                                                 if (messageToFragment.length() > 500) { // Si contenuMessage est plus grand que 500
 
+                                                    //on calcule le nombre de fragments
                                                     float nmbFragment = (float) messageToFragment.length() / 500;
                                                     if (nmbFragment % 1 > 0) {
                                                         nmbFragment = nmbFragment - (nmbFragment % 1);
@@ -225,8 +245,8 @@ public class ConnectionThread implements Runnable {
                                                             }
 
                                                         }
-                                                        // Afficher le message de type FILE (simuler l'envoi)
 
+                                                        //on envoie le fragment
                                                         String messageComplet = "FILE" + "|" + fileName + "|" + offset2 + "|" + (isLast2 ? 1 : 0) + "|" + fragment;
                                                         System.out.println(messageComplet);
                                                         out.println(messageComplet);
@@ -235,6 +255,7 @@ public class ConnectionThread implements Runnable {
 
                                                     }
                                                 }
+                                                //s'il n'y a qu'un seul fragment
                                                 else{
                                                     int nbPadding = 500-messageToFragment.length();
                                                     for(int x = 0; x < nbPadding;x++){
@@ -255,18 +276,18 @@ public class ConnectionThread implements Runnable {
 
                                     }
                                     else{
-                                        //if it was read from read redirect
+                                        //si le read provenait d'un read redirect
                                         if(dataArray.length > 3){
                                             String fileName = dataArray[2];
                                             String[] instigatorInfo = dataArray[3].split(":");
                                             String response = "";
-
                                             if(serveurObject.redirectConnections.containsKey(fileName+"/"+dataArray[1])){
-                                                //transfer first fragment
+                                                //on transfert  le premier fragment dans la connexion spéciale du redirect
                                                 response = serveurObject.redirectConnections.get(fileName+"/"+dataArray[1]).SendReadRequest(fileName,InetAddress.getByName(instigatorInfo[0].substring(1)),Integer.parseInt(instigatorInfo[1]));
                                                 String[] responseSplit = response.split("\\|");
                                                 String Message = "";
                                                 boolean isFragmenting = false;
+                                                // si la connexion de redirect répond par un fragment, on entre en mode fragmentation et se prépare à recevoir le reste des fragments
                                                 if (responseSplit[0].equalsIgnoreCase("FILE")){
                                                     if(responseSplit[3].equals("0")){
                                                         isFragmenting = true;
@@ -276,7 +297,7 @@ public class ConnectionThread implements Runnable {
                                                     }
                                                     out.println(response);
                                                     out.flush();
-                                                    //if more, loop until last fragment
+                                                    //s'il y a plus qu'un fragment, on boucle jusqu'à avoir tout reçu
                                                     while (isFragmenting){
                                                         response = serveurObject.redirectConnections.get(fileName+"/"+dataArray[1]).ReceiveFragment();
                                                         responseSplit = response.split("\\|");
@@ -315,6 +336,7 @@ public class ConnectionThread implements Runnable {
                                 }
                                 else{
                                     //AddNewAvailableFile
+                                    //pour rajouter un nouveau fichier au files du serveur
                                     if(dataArray[0].equalsIgnoreCase("AddAvailableFile")){
                                         if(dataArray.length >3){
                                             serveurObject.AddNewFileToFileList(dataArray[1],dataArray[2],dataArray[3]);
