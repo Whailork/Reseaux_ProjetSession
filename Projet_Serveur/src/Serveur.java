@@ -83,15 +83,26 @@ public class Serveur {
                 BufferedReader bfr = new BufferedReader(fl);
                 String line = "";
                 while ((line = bfr.readLine()) != null){
+
+
                     app.strPeers.add(line);
                 }
 
-                //on load les peers du fichier file pour les utiliser plus tard
+                //on load les files du fichier file pour les utiliser plus tard
                 FileReader fl2 = new FileReader(app.filesList);
                 BufferedReader bfr2 = new BufferedReader(fl2);
                 String line2 = "";
                 while ((line2 = bfr2.readLine()) != null){
-                    app.strFiles.add(line2);
+                    //on ignore le premier fichier de la liste s'il est exactement pareil à une réponse de serveur pour que le client n'interprète pas la réponse d'un ls comme la réponse d'une autre requête.
+                    if(app.strFiles.isEmpty()){
+                        if(!(line2.equals("FILE") || line2.equals("REGISTER") || line2.equals("WRITE") || line2.equals("LS") || line2.equals("READ")  || line2.equals("REGISTERED"))){
+                            app.strFiles.add(line2);
+                        }
+                    }
+                    else{
+                        app.strFiles.add(line2);
+                    }
+
                 }
 
 
