@@ -93,12 +93,27 @@ public class ConnectionThread implements Runnable {
                             if(dataArray[0].equalsIgnoreCase("WRITE")){
                                 PrintWriter out = new PrintWriter(client.getOutputStream(),true);
                                 boolean fileNameAvailable = true;
+                                // Verifier si le nom de fichier est vide
+                                if (dataArray[2].isEmpty()){
+                                    writeAuthorized = false;
+                                    fileNameAvailable = false;
+                                    out.println("FILE NAME IS EMPTY");
+                                    out.flush();
+                                }
+
                                 // on vérifie si le nom de fichier est déjà utilisé ailleurs
                                 for (String file : serveurObject.strFiles){
                                     if (Objects.equals(file, dataArray[2])){
                                         fileNameAvailable = false;
                                         break;
                                     }
+                                }
+                                // Verifier si le nom de fichier est egal a une reponse de serveur
+                                if (dataArray[2].equals("FILE") || dataArray[2].equals("REGISTER") || dataArray[2].equals("WRITE") || dataArray[2].equals("LS") || dataArray[2].equals("READ")  || dataArray[2].equals("REGISTERED")) {
+                                    writeAuthorized = false;
+                                    fileNameAvailable = false;
+                                    out.println("FILE NAME IS NOT ALLOWED");
+                                    out.flush();
                                 }
                                     // on vérifie le token de connexion et que le nom de fichier est disponible
                                     if(dataArray[1].equalsIgnoreCase(clientToken) && fileNameAvailable){

@@ -158,7 +158,7 @@ public class Client {
                 }
                 System.out.println(Response);
                 // si le serveur répond par un read redirect, le client envoie automatiquement la requête avec le nouveau token de connexion
-                if(splitResponse[0].equalsIgnoreCase("READ-REDIRECT")){
+                if(splitResponse[0].equals("READ-REDIRECT")){
                     String RedirectToken = splitResponse[2];
                     System.out.println("Sending READ request to " + splitResponse[1] + " with token : " + splitResponse[2]);
                     String[] adress = splitResponse[1].split(":");
@@ -185,7 +185,7 @@ public class Client {
                         }
                     }
                     //s'il reste encore au moins un fragment, on active le mode de fragmentation ce qui veut dire que le programme va passer par dessus l'envoi d'une nouvelle requête du client
-                    if (responseSplit[0].equalsIgnoreCase("FILE")){
+                    if (responseSplit[0].equals("FILE")){
                         if(responseSplit[3].equals("0")){
                             isFragmenting = true;
                             fullMessage.append(contenuFragment);
@@ -193,7 +193,7 @@ public class Client {
                     }
                 }
                 //sinon si c'est un read normal
-                if (splitResponse[0].equalsIgnoreCase("FILE")){
+                if (splitResponse[0].equals("FILE")){
                     // on décrypte le message en enlevant les doublons de caractères tampons et le padding à la fin du message
                     String contenuFragment = splitResponse[4];
                     contenuFragment = contenuFragment.replace("~~","~");
